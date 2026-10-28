@@ -1,2 +1,1 @@
-# TTM
-Enterprise Team Task Management Platform
+# TTM | Enterprise Team Task Management Platform
