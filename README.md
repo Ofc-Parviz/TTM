@@ -247,6 +247,12 @@ All responses are JSON. In error responses, `code` is intended for the applicati
 
 ---
 
-## License
+## A Note from the Developer
 
-To be determined.
+I put a great deal of time, effort, and dedication into building this project, and I'm happy to make it freely available for anyone to use, learn from, or build upon.
+
+All I ask is that you preserve my name as the original developer and include a link to my GitHub profile when redistributing or showcasing this project.
+
+I'm currently seeking new professional opportunities, so keeping the original attribution would mean a lot to me and help others discover my work.
+
+Thank you for taking the time to explore this project!
