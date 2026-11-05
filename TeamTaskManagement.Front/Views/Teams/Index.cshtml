@@ -1,0 +1,467 @@
+﻿@using TeamTaskManagement.Application.Teams.Queries.GetMyTeams
+@model IReadOnlyList<MyTeamResponse>
+
+@{
+    ViewData["Title"] = "تیم‌های من";
+}
+
+<style>
+    .ttm-team-card {
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    html[data-theme="dark"] .ttm-team-card {
+        background: #1A1A1A;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .ttm-team-card:hover {
+        border-color: var(--ttm-primary);
+        box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+    }
+
+    html[data-theme="dark"] .ttm-team-card:hover {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .ttm-team-card .card-title {
+        color: var(--ttm-text);
+        font-weight: 600;
+    }
+
+    html[data-theme="dark"] .ttm-team-card .card-title {
+        color: #fff;
+    }
+
+    .ttm-task-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0;
+        font-size: 0.85rem;
+        color: var(--ttm-text);
+        border-bottom: 1px solid var(--ttm-border);
+    }
+
+        .ttm-task-stat:last-child {
+            border-bottom: none;
+        }
+
+        .ttm-task-stat i {
+            color: var(--ttm-primary);
+            margin-left: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .ttm-task-stat strong {
+            color: var(--ttm-primary);
+            font-weight: 600;
+        }
+
+    .ttm-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--ttm-primary), var(--ttm-primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .ttm-teammates-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .ttm-teammate-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8rem;
+        color: var(--ttm-text);
+    }
+
+   /*  .ttm-role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: #F3E8FF;
+        color: var(--ttm-primary);
+        border: 1px solid #E9D5FF;
+        white-space: nowrap;
+    } */
+
+    html[data-theme="dark"] .ttm-role-badge {
+        background: #2D1B4E;
+        border-color: #4C2D6B;
+        color: #A78BFA;
+    }
+
+     .ttm-member-count-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: #F3E8FF;
+            color: var(--ttm-primary);
+            border: 1px solid #E9D5FF;
+            white-space: nowrap;
+        }
+
+    html[data-theme="dark"] .ttm-member-count-badge {
+        background: #2D1B4E;
+        border-color: #4C2D6B;
+        color: #A78BFA;
+    }
+
+    .ttm-role-badge-access {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: #DDD6FE;
+        color: var(--ttm-primary);
+        border: 1px solid #C4B5FD;
+        white-space: nowrap;
+    }
+
+    html[data-theme="dark"] .ttm-role-badge-access {
+        background: #3B2667;
+        border-color: #5B3A99;
+        color: #D8B4FE;
+    }
+
+    .ttm-role-access-box {
+        background: #F9F5FF;
+        border-radius: 6px;
+        border-left: 3px solid var(--ttm-primary);
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    html[data-theme="dark"] .ttm-role-access-box {
+        background: #2D1B4E;
+        border-left-color: var(--ttm-primary);
+    }
+
+    .ttm-role-badge i {
+        margin-left: 0.3rem;
+        font-size: 0.65rem;
+    }
+
+    .ttm-empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .ttm-empty-icon {
+        font-size: 3rem;
+        color: var(--ttm-border);
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    .ttm-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+        .ttm-page-header h1 {
+            color: var(--ttm-text);
+            margin: 0;
+        }
+
+    .btn-primary {
+        background-color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: var(--ttm-primary-dark);
+            border-color: var(--ttm-primary-dark);
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+        }
+
+        .btn-primary i,
+        .btn-outline-primary i {
+            vertical-align: -1px;
+        }
+
+    html[data-theme="dark"] .btn-primary:hover,
+    html[data-theme="dark"] .btn-primary:focus {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .btn-outline-primary {
+        color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--ttm-primary);
+            border-color: var(--ttm-primary);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+        }
+
+    html[data-theme="dark"] .btn-outline-primary:hover {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .modal-content {
+        background: var(--ttm-surface);
+        border: 1px solid var(--ttm-border);
+        color: var(--ttm-text);
+    }
+
+    .modal-header {
+        background: var(--ttm-surface);
+        border-bottom: 1px solid var(--ttm-border);
+    }
+
+    .modal-footer {
+        background: var(--ttm-surface);
+        border-top: 1px solid var(--ttm-border);
+    }
+
+    .modal-title {
+        color: var(--ttm-text);
+    }
+
+    .btn-close {
+        filter: brightness(0.7);
+    }
+
+    html[data-theme="dark"] .btn-close {
+        filter: invert(1) brightness(0.8);
+    }
+
+        html[data-theme="dark"] .btn-close:hover {
+            filter: invert(1) brightness(1);
+        }
+
+    .form-control {
+        background: var(--ttm-surface);
+        color: var(--ttm-text);
+        border-color: var(--ttm-border);
+    }
+
+        .form-control:focus {
+            background: var(--ttm-surface);
+            color: var(--ttm-text);
+            border-color: var(--ttm-primary);
+            box-shadow: 0 0 0 0.25rem rgba(91, 33, 182, 0.1);
+        }
+
+    .form-label {
+        color: var(--ttm-text);
+    }
+
+    .ttm-teams-grid {
+    margin-bottom: 2rem;
+}
+
+@@media (max-width: 767px) {
+    .ttm-teams-grid {
+        margin-bottom: 6rem;
+    }
+}
+
+    .ttm-task-stats-container {
+        margin-bottom: 1.5rem;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .ttm-task-stat-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+        color: var(--ttm-text);
+        text-decoration: none;
+        border-bottom: 1px solid var(--ttm-border);
+        transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        cursor: pointer;
+    }
+
+        .ttm-task-stat-link:last-child {
+            border-bottom: none;
+        }
+
+        .ttm-task-stat-link:hover {
+            background: #F3E8FF;
+        }
+
+    html[data-theme="dark"] .ttm-task-stat-link:hover {
+        background: #2D1B4E;
+    }
+
+    .ttm-task-stat-link i {
+        color: var(--ttm-primary);
+        margin-left: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .ttm-task-stat-link strong {
+        color: var(--ttm-primary);
+        font-weight: 600;
+    }
+
+</style>
+
+<div class="ttm-page-header">
+    <h1 class="h3">تیم‌های من</h1>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+        <i class="bi bi-plus-circle"></i> ایجاد تیم جدید
+    </button>
+</div>
+
+@if (Model.Count == 0) {
+    <div class="ttm-empty-state">
+        <div class="ttm-empty-icon">
+            <i class="bi bi-inbox"></i>
+        </div>
+        <p class="text-muted mb-4">هنوز در هیچ تیمی عضو نیستید. به یک تیم ملحق شوید یا</p>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+            تیم خود را بسازید
+        </button>
+    </div>
+}
+else {
+    <div class="row g-3 ttm-teams-grid">
+        @foreach (var team in Model) {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card ttm-team-card h-100 border-0">
+                    <div class="card-body d-flex flex-column">
+
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-0">
+                            <h5 class="card-title mb-0">@team.TeamDisplayname
+                            </h5>
+                            <!-- Members Count -->
+                            <div class="mb-3">
+                                <span class="ttm-member-count-badge">
+                                    <i class="bi bi-people"></i> @team.TeamCurrentMembersCount عضو
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        @if (!string.IsNullOrWhiteSpace(team.TeamDescription)) {
+                            <p class="text-muted small mb-3">@team.TeamDescription</p>
+                        }
+
+
+                        <!-- User Role & Access -->
+                        <div class="ttm-role-access-box">
+                            <small class="text-muted d-block mb-1">نقش شما در این تیم:</small>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="ttm-role-badge">
+                                    <i class="bi bi-badge"></i> @team.MyRoleTitle
+                                </span>
+                                <span class="ttm-role-badge-access"><i class="bi bi-shield-check"></i> @team.MyAccessLevel</span>
+                            </div>
+                        </div>
+
+                        <!-- Task Stats -->
+                        <div class="ttm-task-stats-container">
+                            <small class="text-muted d-block mb-2">آمار وظایف ناتمام مربوط به شما در این تیم:</small>
+                            <a href="/Tasks/Index?Filter=MyCreatedTasks&TeamId=@team.TeamId" class="ttm-task-stat-link" title="وظایفی که مدیرش شما هستید و هم-تیمی دیگری مسئول انجام دادن آن است">
+                                <span><i class="bi bi-list-check"></i> وظایف تحت مدیریت</span>
+                                <strong>@team.MyOpenCreatedTasksCountInThisTeam</strong>
+                            </a>
+                            <a href="/Tasks/Index?Filter=MyAssignedTasks&TeamId=@team.TeamId" class="ttm-task-stat-link" title="وظایفی که انجام دادنش به شما محول شده و هم-تیمی دیگری مدیر آن است">
+                                <span><i class="bi bi-person-check"></i> وظایف محول شده</span>
+                                <strong>@team.MyOpenAssignedTasksCountInThisTeam</strong>
+                            </a>
+                            <a href="/Tasks/Index?Filter=MySelfTasks&TeamId=@team.TeamId" class="ttm-task-stat-link" title="وظایفی که شما همزمان هم مدیرشان هستید و هم مسئول انجام دادنشان">
+                                <span><i class="bi bi-clipboard"></i> وظایف شخصی</span>
+                                <strong>@team.MyOpenSelfTasksCountInThisTeam</strong>
+                            </a>
+                        </div>
+
+                        <!-- Teammates فعلا هم تیمی نمایش نمیدیم تو صفحه تیم ها -->
+                       @*  @if (team.Teammates.Any()) {
+                            <div class="mb-3 pb-3" style="border-bottom: 1px solid var(--ttm-border);">
+                                <small class="text-muted d-block mb-2">هم‌تیمی‌ها</small>
+                                <div class="ttm-teammates-group">
+                                    @foreach (var teammate in team.Teammates.Take(4)) {
+                                        <div class="ttm-teammate-item">
+                                            <div class="ttm-avatar">@teammate.UserDisplayname.First()</div>
+                                            <span>@teammate.UserDisplayname</span>
+                                        </div>
+                                    }
+                                    @if (team.Teammates.Count > 4) {
+                                        <small class="text-muted align-self-center">+@(team.Teammates.Count - 4)</small>
+                                    }
+                                </div>
+                            </div>
+                        } *@
+
+                        <!-- Details Button -->
+                        <a href="/Teams/Details/@team.TeamId" class="btn btn-outline-primary btn-sm mt-auto">
+                            <i class="bi bi-arrow-left"></i> جزئیات تیم
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Create Team Modal -->
+<div class="modal fade" id="createTeamModal" tabindex="-1" role="dialog" aria-labelledby="createTeamLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTeamLabel">ایجاد تیم جدید</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <form method="post" action="/Teams/Create">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="displayname" class="form-label">نام تیم <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="displayname" name="Displayname" required maxlength="100" placeholder="مثلاً: تیم توسعه">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">توضیحات <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="Description" rows="3" required maxlength="500" placeholder="توضیحات کوتاهی درباره این تیم..."></textarea>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="leaderTitle" class="form-label">عنوان نقش مالک(شما) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="leaderTitle" name="LeaderTitle" required maxlength="50" placeholder="مثلاً: مدیر پروژه">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary">ایجاد تیم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

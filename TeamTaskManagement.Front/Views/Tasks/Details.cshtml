@@ -1,0 +1,930 @@
+﻿@using TeamTaskManagement.Application.TeamTasks.Responses
+@using TeamTaskManagement.Application.Teams.Responses
+@using TeamTaskManagement.Domain.Enums
+@using TeamTaskManagement.Web.Helpers
+@model TeamTaskResponse
+
+@{
+    ViewData["Title"] = "جزئیات وظیفه";
+
+    // ── وضعیت و نقش سرور منبع حقیقت است - این منطق فقط برای نمایش دکمه‌هاست ──
+    var status = Model.Status;
+
+    var statusClass = status switch {
+        TeamTaskStatus.Pending => "ttm-status-pending",
+        TeamTaskStatus.OnGoing => "ttm-status-ongoing",
+        TeamTaskStatus.ClaimedAsComplete => "ttm-status-claimed-complete",
+        TeamTaskStatus.ClaimedAsFailure => "ttm-status-claimed-failure",
+        TeamTaskStatus.OrderedToTryAgain => "ttm-status-ordered-retry",
+        TeamTaskStatus.AcceptedToTryAgain => "ttm-status-accepted-retry",
+        TeamTaskStatus.RejectedToTryAgain => "ttm-status-rejected-retry",
+        TeamTaskStatus.ClosedAsFailure => "ttm-status-closed-failure",
+        TeamTaskStatus.ClosedAsDeadlineFailure => "ttm-status-closed-deadline",
+        TeamTaskStatus.ClosedAsComplete => "ttm-status-closed-complete",
+        _ => "ttm-status-pending"
+    };
+
+    bool isPending = status == TeamTaskStatus.Pending;
+    bool isOnGoing = status == TeamTaskStatus.OnGoing;
+    bool isClaimedComplete = status == TeamTaskStatus.ClaimedAsComplete;
+    bool isClaimedFailure = status == TeamTaskStatus.ClaimedAsFailure;
+    bool isOrderedRetry = status == TeamTaskStatus.OrderedToTryAgain;
+    bool isAcceptedRetry = status == TeamTaskStatus.AcceptedToTryAgain;
+    bool isRejectedRetry = status == TeamTaskStatus.RejectedToTryAgain;
+
+    bool isClosed = status is TeamTaskStatus.ClosedAsFailure
+                          or TeamTaskStatus.ClosedAsDeadlineFailure
+                          or TeamTaskStatus.ClosedAsComplete;
+
+    bool isOverdue = !isClosed && Model.DeadlineUtc.HasValue && Model.DeadlineUtc.Value < DateTime.UtcNow;
+
+    var pos = Model.MyPosition;
+    bool isCreator = pos is MyTaskPositionResponse.Creator or MyTaskPositionResponse.Both;
+    bool isAssignee = pos is MyTaskPositionResponse.Assignee or MyTaskPositionResponse.Both;
+
+    string myPosText = pos switch {
+        MyTaskPositionResponse.Creator => "مدیر وظیفه",
+        MyTaskPositionResponse.Assignee => "مسئول انجام",
+        MyTaskPositionResponse.Both => "مدیر و مسئول",
+        MyTaskPositionResponse.None => "نقشی ندارید",
+        _ => "—"
+    };
+
+
+    // قوانین نمایش دکمه‌ها، بر اساس وضعیت + نقش
+
+    // مسئول انجام
+    bool canStart = isAssignee && isPending;
+    bool canClaimComplete = isAssignee && (isOnGoing || isAcceptedRetry);
+    bool canClaimFailure = isAssignee && (isOnGoing || isAcceptedRetry);
+    bool canAcceptRetry = isAssignee && isOrderedRetry;
+    bool canRejectRetry = isAssignee && isOrderedRetry;
+
+    // مدیر وظیفه
+    bool canOrderRetry = isCreator && (isClaimedComplete || isClaimedFailure);
+    bool canCloseComplete = isCreator && isClaimedComplete;
+    bool canCloseFailure = isCreator && (isClaimedFailure || isRejectedRetry);
+
+    bool canAct = canStart || canClaimComplete || canClaimFailure || canAcceptRetry
+                  || canRejectRetry || canOrderRetry || canCloseComplete || canCloseFailure;
+
+    // ویرایش فقط برای مدیر وظیفه و مالک تیم و تا قبل از بسته شدن
+    bool canManage = !isClosed && (isCreator || Model
+        .MyCurrentAccessLevelInTeam == MemberRoleResponse.Leader);
+
+    // مقادیر اولیه ددلاین: نمایش شمسی (تهران) + ایزو یو-تی-سی برای فیلد مخفی
+    string deadlineJalaliValue = Model.DeadlineUtc.HasValue
+        ? $"{Model.DeadlineUtc.Value.Get_Shamsi_Short_Date()} {Model.DeadlineUtc.Value.Get_Shamsi_Short_Time().Substring(0, 5)}"
+        : string.Empty;
+
+    string deadlineUtcIso = Model.DeadlineUtc.HasValue
+        ? DateTime.SpecifyKind(Model.DeadlineUtc.Value, DateTimeKind.Utc).ToString("o")
+        : string.Empty;
+}
+
+<div class="ttm-task-page">
+
+    @* ── 1) Header ── *@
+    <div class="ttm-detail-header">
+        <a href="/Tasks" class="btn btn-sm btn-outline-secondary ttm-back-btn">
+            <i class="bi bi-arrow-right"></i> بازگشت
+        </a>
+    </div>
+
+
+    @* ── 2) Main info card ── *@
+    <div class="ttm-detail-card mb-4">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-3">
+            <h1 class="h3 ttm-detail-title mb-0">@Model.Title</h1>
+            <span class="ttm-status-badge @statusClass">@Model.StatusText</span>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Description)) {
+            <p class="ttm-task-desc-full">@Model.Description</p>
+        }
+        else {
+            <p class="ttm-faint small mb-3">توضیحی برای این وظیفه ثبت نشده است</p>
+        }
+
+        <h5 class="ttm-section-title">
+            <i class="bi bi-info-circle"></i> اطلاعات وظیفه
+        </h5>
+
+        <div class="ttm-info-row">
+            <span class="ttm-label"><i class="bi bi-people"></i> تیم</span>
+            <span class="ttm-value">
+                <a href="/Teams/Details/@Model.TeamId" class="ttm-task-team-badge">
+                    @Model.TeamDisplayname
+                </a>
+            </span>
+        </div>
+
+        <div class="ttm-info-row">
+            <span class="ttm-label"><i class="bi bi-person-badge"></i> نقش شما</span>
+            <span class="ttm-value">
+                @if (myPosText != "—") {
+                    <span class="ttm-my-position"><i class="bi bi-person-badge"></i> @myPosText</span>
+                }
+                else {
+                    <span class="ttm-faint">—</span>
+                }
+            </span>
+        </div>
+
+        <div class="ttm-info-row">
+            <span class="ttm-label"><i class="bi bi-person-check"></i> مسئول انجام</span>
+            <span class="ttm-value">@Model.Assignee.UserDisplayname</span>
+        </div>
+        <div class="ttm-info-row">
+            <span class="ttm-label"><i class="bi bi-person"></i> مدیر وظیفه</span>
+            <span class="ttm-value">@Model.Creator.UserDisplayname</span>
+        </div>
+        <div class="ttm-info-row">
+            <span class="ttm-label"><i class="bi bi-calendar-event"></i> ددلاین</span>
+            <span class="ttm-value">
+                @if (Model.DeadlineUtc.HasValue) {
+                    <span class="@(isOverdue ? "ttm-deadline overdue" : "ttm-deadline")">
+                        @Model.DeadlineUtc.Value.Get_Shamsi_Long_Date_With_Time()
+                        @if (isOverdue) {
+                            <i class="bi bi-exclamation-circle"></i>
+                        }
+                    </span>
+                }
+                else {
+                    <span class="ttm-faint">بدون ددلاین</span>
+                }
+            </span>
+        </div>
+      
+        <div class="ttm-info-row">
+            <span class="ttm-label"><i class="bi bi-plus-circle"></i> ایجاد</span>
+            <span class="ttm-value">@Model.CreatedAtUtc.Get_Shamsi_Long_Date_With_Time()</span>
+        </div>
+        <div class="ttm-info-row">
+            <span class="ttm-label"><i class="bi bi-clock-history"></i> آخرین تغییر</span>
+            <span class="ttm-value">
+                @(Model.LastModifiedAtUtc.HasValue
+                    ? Model.LastModifiedAtUtc.Value.Get_Shamsi_Long_Date_With_Time()
+                    : "—")
+            </span>
+        </div>
+    </div>
+
+    @* ── 3) Status action bar ── *@
+    <div class="ttm-detail-card mb-4">
+        <h5 class="ttm-section-title">
+            <i class="bi bi-lightning-charge"></i> اقدامات وضعیت
+        </h5>
+
+        @if (canAct) {
+            <div class="ttm-action-bar d-flex flex-wrap gap-2">
+
+                @if (canStart) {
+                    <form method="post" action="/Tasks/Start/@Model.TaskId">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-play-fill"></i> شروع
+                        </button>
+                    </form>
+                }
+
+                @if (canClaimComplete) {
+                    <form method="post" action="/Tasks/ClaimComplete/@Model.TaskId">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2"></i> اعلام تکمیل
+                        </button>
+                    </form>
+                }
+
+                @if (canClaimFailure) {
+                    <form method="post" action="/Tasks/ClaimFailure/@Model.TaskId" onsubmit="return confirm('اعلام شکست این وظیفه ثبت شود؟');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-warning">
+                            <i class="bi bi-flag"></i> اعلام شکست
+                        </button>
+                    </form>
+                }
+
+                @if (canOrderRetry) {
+                    <form method="post" action="/Tasks/OrderRetry/@Model.TaskId">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-repeat"></i> دستور تلاش مجدد
+                        </button>
+                    </form>
+                }
+
+                @if (canAcceptRetry) {
+                    <form method="post" action="/Tasks/AcceptRetry/@Model.TaskId">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-success">
+                            <i class="bi bi-check-circle"></i> پذیرش تلاش مجدد
+                        </button>
+                    </form>
+                }
+
+                @if (canRejectRetry) {
+                    <form method="post" action="/Tasks/RejectRetry/@Model.TaskId" onsubmit="return confirm('تلاش مجدد رد شود؟');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="bi bi-x-circle"></i> رد تلاش مجدد
+                        </button>
+                    </form>
+                }
+
+                @if (canCloseComplete) {
+                    <form method="post" action="/Tasks/CloseComplete/@Model.TaskId" onsubmit="return confirm('این وظیفه به‌عنوان تکمیل‌شده بسته شود؟');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-lock"></i> بستن (تکمیل)
+                        </button>
+                    </form>
+                }
+
+                @if (canCloseFailure) {
+                    <form method="post" action="/Tasks/CloseFailure/@Model.TaskId" onsubmit="return confirm('این وظیفه به‌عنوان شکست‌خورده بسته شود؟');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-lock"></i> بستن (شکست)
+                        </button>
+                    </form>
+                }
+            </div>
+        }
+        else {
+            <p class="mb-0 small ttm-faint">
+                <i class="bi bi-hourglass-split"></i> اقدام فعالی برای شما وجود ندارد
+            </p>
+        }
+    </div>
+
+    @* ── 4) Edit section (only for task manager, not closed) ── *@
+    @if (canManage) {
+        <div class="accordion ttm-edit-accordion" id="taskEdit">
+
+            @* ویرایش عنوان و توضیحات *@
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editDetails" aria-expanded="false" aria-controls="editDetails">
+                        <i class="bi bi-pencil-square me-2"></i> ویرایش عنوان و توضیحات
+                    </button>
+                </h2>
+                <div id="editDetails" class="accordion-collapse collapse" data-bs-parent="#taskEdit">
+                    <div class="accordion-body">
+                        <form method="post" action="/Tasks/UpdateDetails">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="TaskId" value="@Model.TaskId" />
+
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">عنوان <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="taskTitle" name="Title" value="@Model.Title" required maxlength="150" placeholder="عنوان وظیفه را وارد کنید" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label">توضیحات</label>
+                                <textarea class="form-control" id="taskDescription" name="Description" rows="4" maxlength="5000" placeholder="کاری که باید انجام شود را توضیح دهید">@Model.Description</textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editDetails">انصراف</button>
+                                <button type="submit" class="btn btn-primary btn-sm">ذخیره تغییرات</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* تغییر ددلاین *@
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editDeadline" aria-expanded="false" aria-controls="editDeadline">
+                        <i class="bi bi-calendar2-week me-2"></i> تغییر ددلاین
+                    </button>
+                </h2>
+                <div id="editDeadline" class="accordion-collapse collapse" data-bs-parent="#taskEdit">
+                    <div class="accordion-body">
+                        <form method="post" action="/Tasks/UpdateDeadline" id="deadlineForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="TaskId" value="@Model.TaskId" />
+                            <input type="hidden" name="DeadlineUtc" id="deadlineUtc" value="@deadlineUtcIso" />
+
+                            <div class="mb-3">
+                                <label for="deadlineJalali" class="form-label">ددلاین جدید <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="deadlineJalali"
+                                       placeholder="انتخاب تاریخ و ساعت" autocomplete="off" required
+                                       value="@deadlineJalaliValue" />
+                                <div class="form-text">آخرین مهلت انجام این کار چه تاریخی است؟</div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editDeadline">انصراف</button>
+                                <button type="submit" class="btn btn-primary btn-sm">ثبت ددلاین</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* تغییر مسئول انجام *@
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editAssignee" aria-expanded="false" aria-controls="editAssignee">
+                        <i class="bi bi-person-check me-2"></i> تغییر مسئول انجام
+                    </button>
+                </h2>
+                <div id="editAssignee" class="accordion-collapse collapse" data-bs-parent="#taskEdit">
+                    <div class="accordion-body">
+                        <form method="post" action="/Tasks/RotateAssignee">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="TaskId" value="@Model.TaskId" />
+
+                            <div class="mb-3">
+                                <label for="newAssigneeSelect" class="form-label">چه کسی باید انجامش دهد؟ <span class="text-danger">*</span></label>
+                                <select class="form-select" id="newAssigneeSelect" name="NewAssigneeMemberId" data-members data-kind="assignee" required disabled>
+                                    <option value="">در حال دریافت اعضا...</option>
+                                </select>
+                                <div class="assigneeHint form-text" style="display:none;">
+                                    شما خودتان را به‌عنوان مسئول انجام دادن این کار انتخاب کرده‌اید.
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editAssignee">انصراف</button>
+                                <button type="submit" class="btn btn-primary btn-sm">ثبت مسئول</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* تغییر مدیر وظیفه *@
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#editCreator" aria-expanded="false" aria-controls="editCreator">
+                        <i class="bi bi-person-gear me-2"></i> تغییر مدیر وظیفه
+                    </button>
+                </h2>
+                <div id="editCreator" class="accordion-collapse collapse" data-bs-parent="#taskEdit">
+                    <div class="accordion-body">
+                        <form method="post" action="/Tasks/RotateCreator">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="TaskId" value="@Model.TaskId" />
+
+                            <div class="mb-3">
+                                <label for="newCreatorSelect" class="form-label">مدیر جدید <span class="text-danger">*</span></label>
+                                <select class="form-select" id="newCreatorSelect" name="NewCreatorMemberId" data-members data-kind="creator" required disabled>
+                                    <option value="">در حال دریافت اعضا...</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#editCreator">انصراف</button>
+                                <button type="submit" class="btn btn-primary btn-sm">ثبت مدیر</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+    else if (isClosed) {
+        <p class="small ttm-faint mb-0">
+            <i class="bi bi-lock"></i> این وظیفه بسته شده و قابل ویرایش نیست
+        </p>
+    }
+
+</div>
+
+@section Styles {
+    <style>
+        /* ── Page ── */
+        .ttm-task-page {
+            margin-bottom: 2rem;
+        }
+
+        @@media (max-width: 767px) {
+            .ttm-task-page {
+                margin-bottom: 6rem;
+            }
+        }
+
+        .ttm-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .ttm-detail-title {
+            color: var(--ttm-text);
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+            word-break: break-word;
+        }
+
+        .ttm-back-btn {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* ── Status badges (identical to Tasks/Index) ── */
+        .ttm-status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .ttm-status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .ttm-status-ongoing {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .ttm-status-claimed-complete {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .ttm-status-claimed-failure {
+            background: #FEDBA8;
+            color: #92400E;
+        }
+
+        .ttm-status-ordered-retry {
+            background: #E9D5FF;
+            color: #6B21A8;
+        }
+
+        .ttm-status-accepted-retry {
+            background: #F3E8FF;
+            color: #7E22CE;
+        }
+
+        .ttm-status-rejected-retry {
+            background: #E5E7EB;
+            color: #374151;
+        }
+
+        .ttm-status-closed-failure {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .ttm-status-closed-deadline {
+            background: #7F1D1D;
+            color: #FCA5A5;
+        }
+
+        .ttm-status-closed-complete {
+            background: #DCFCE7;
+            color: #166534;
+        }
+
+        html[data-theme="dark"] .ttm-status-pending {
+            background: #78350F;
+            color: #FCD34D;
+        }
+
+        html[data-theme="dark"] .ttm-status-ongoing {
+            background: #1E3A8A;
+            color: #93C5FD;
+        }
+
+        html[data-theme="dark"] .ttm-status-claimed-complete {
+            background: #065F46;
+            color: #86EFAC;
+        }
+
+        html[data-theme="dark"] .ttm-status-claimed-failure {
+            background: #92400E;
+            color: #FDE68A;
+        }
+
+        html[data-theme="dark"] .ttm-status-ordered-retry {
+            background: #6B21A8;
+            color: #E9D5FF;
+        }
+
+        html[data-theme="dark"] .ttm-status-accepted-retry {
+            background: #581C87;
+            color: #F3E8FF;
+        }
+
+        html[data-theme="dark"] .ttm-status-rejected-retry {
+            background: #374151;
+            color: #E5E7EB;
+        }
+
+        html[data-theme="dark"] .ttm-status-closed-failure {
+            background: #7F1D1D;
+            color: #FCA5A5;
+        }
+
+        html[data-theme="dark"] .ttm-status-closed-deadline {
+            background: #5B0F0F;
+            color: #FECACA;
+        }
+
+        html[data-theme="dark"] .ttm-status-closed-complete {
+            background: #143016;
+            color: #86EFAC;
+        }
+
+        /* ── Team badge (identical to Tasks/Index) ── */
+        .ttm-task-team-badge {
+            display: inline-block;
+            background: #F3E8FF;
+            color: var(--ttm-primary);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+            .ttm-task-team-badge:hover {
+                color: var(--ttm-primary);
+                text-decoration: none;
+            }
+
+        html[data-theme="dark"] .ttm-task-team-badge {
+            background: #2D1B4E;
+            color: #A78BFA;
+        }
+
+        .ttm-my-position {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            background: #EDE9FE;
+            color: var(--ttm-primary);
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        html[data-theme="dark"] .ttm-my-position {
+            background: #3730A3;
+            color: #C7D2FE;
+        }
+
+        /* ── Cards (same surface, border, radius and hover as Tasks/Index) ── */
+        .ttm-detail-card {
+            background: #fff;
+            border: 1px solid var(--ttm-border);
+            border-right: 4px solid var(--ttm-primary);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        html[data-theme="dark"] .ttm-detail-card {
+            background: #1A1A1A;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .ttm-detail-card:hover {
+            border-color: var(--ttm-primary);
+            box-shadow: 0 6px 18px rgba(91, 33, 182, 0.15);
+        }
+
+        .ttm-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ttm-text);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+            .ttm-section-title i {
+                color: var(--ttm-primary);
+            }
+
+        .ttm-task-desc-full {
+            white-space: pre-line;
+            line-height: 1.9;
+            font-size: 0.9rem;
+            color: var(--ttm-text);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px dashed var(--ttm-border);
+        }
+
+        .ttm-faint {
+            color: var(--ttm-muted);
+            opacity: .75;
+        }
+
+        /* ── Info rows ── */
+        .ttm-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px dashed var(--ttm-border);
+            font-size: 0.85rem;
+        }
+
+            .ttm-info-row:last-child {
+                border-bottom: none;
+            }
+
+        .ttm-label {
+            color: var(--ttm-muted);
+            white-space: nowrap;
+        }
+
+            .ttm-label i {
+                color: var(--ttm-primary);
+                margin-left: 0.3rem;
+            }
+
+        .ttm-value {
+            color: var(--ttm-text);
+            text-align: start;
+        }
+
+        .ttm-deadline.overdue {
+            color: var(--ttm-danger);
+            font-weight: 600;
+        }
+
+        /* ── Buttons (same transitions and shadows as Tasks/Index) ── */
+        .btn-primary {
+            background-color: var(--ttm-primary);
+            border-color: var(--ttm-primary);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+            .btn-primary:hover,
+            .btn-primary:focus {
+                background-color: var(--ttm-primary-dark);
+                border-color: var(--ttm-primary-dark);
+                box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+            }
+
+        html[data-theme="dark"] .btn-primary:hover,
+        html[data-theme="dark"] .btn-primary:focus {
+            box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+        }
+
+        .btn-outline-primary {
+            color: var(--ttm-primary);
+            border-color: var(--ttm-primary);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+            .btn-outline-primary:hover {
+                background-color: var(--ttm-primary);
+                border-color: var(--ttm-primary);
+                color: #fff;
+                box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+            }
+
+        html[data-theme="dark"] .btn-outline-primary:hover {
+            box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+        }
+
+        .ttm-action-bar form {
+            margin: 0;
+        }
+
+        .ttm-action-bar .btn {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .ttm-action-bar .btn-success:hover,
+        .ttm-action-bar .btn-outline-success:hover {
+            box-shadow: 0 8px 24px rgba(22, 163, 74, 0.25);
+        }
+
+        .ttm-action-bar .btn-outline-warning:hover {
+            box-shadow: 0 8px 24px rgba(217, 119, 6, 0.25);
+        }
+
+        .ttm-action-bar .btn-danger:hover,
+        .ttm-action-bar .btn-outline-danger:hover {
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.25);
+        }
+
+        .btn-sm {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @@media (max-width: 767px) {
+            .ttm-action-bar .btn {
+                flex: 1 1 calc(50% - .5rem);
+            }
+        }
+
+        /* ── Edit accordion (cards with same surface and hover) ── */
+        .ttm-edit-accordion .accordion-item {
+            background: #fff;
+            border: 1px solid var(--ttm-border);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 0.75rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        html[data-theme="dark"] .ttm-edit-accordion .accordion-item {
+            background: #1A1A1A;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .ttm-edit-accordion .accordion-item:hover {
+            border-color: var(--ttm-primary);
+            box-shadow: 0 6px 18px rgba(91, 33, 182, 0.15);
+        }
+
+        .ttm-edit-accordion .accordion-button {
+            background: #fff;
+            color: var(--ttm-text);
+            box-shadow: none;
+            font-weight: 600;
+            font-size: .9rem;
+            border-radius: 10px;
+        }
+
+            .ttm-edit-accordion .accordion-button:not(.collapsed) {
+                background: #F9F5FF;
+                color: var(--ttm-primary);
+                box-shadow: none;
+                border-radius: 10px 10px 0 0;
+            }
+
+        html[data-theme="dark"] .ttm-edit-accordion .accordion-button {
+            background: #1A1A1A;
+        }
+
+            html[data-theme="dark"] .ttm-edit-accordion .accordion-button:not(.collapsed) {
+                background: #2D1B4E;
+                color: #A78BFA;
+            }
+
+        .ttm-edit-accordion .accordion-body {
+            color: var(--ttm-text);
+            border-top: 1px solid var(--ttm-border);
+        }
+
+        /* ── Form controls (same as Tasks/Index create modal) ── */
+        .ttm-edit-accordion .form-label {
+            color: var(--ttm-text);
+            font-weight: 500;
+        }
+
+        .ttm-edit-accordion .form-control,
+        .ttm-edit-accordion .form-select {
+            background: var(--ttm-surface);
+            color: var(--ttm-text);
+            border-color: var(--ttm-border);
+            font-size: 0.9rem;
+        }
+
+            .ttm-edit-accordion .form-control:focus,
+            .ttm-edit-accordion .form-select:focus {
+                background: var(--ttm-surface);
+                color: var(--ttm-text);
+                border-color: var(--ttm-primary);
+                box-shadow: 0 0 0 0.25rem rgba(91, 33, 182, 0.1);
+            }
+
+        .ttm-edit-accordion .form-text {
+            color: var(--ttm-muted) !important;
+        }
+
+        html[data-theme="dark"] .ttm-edit-accordion .form-select:disabled,
+        html[data-theme="dark"] .ttm-edit-accordion .form-control:disabled {
+            background-color: #1A1A1A;
+            border-color: var(--ttm-border);
+            color: var(--ttm-muted);
+            opacity: 1;
+        }
+
+        /* تقویم بالای فیلد باز شود (مثل Tasks/Index) */
+        .datepicker-plot-area {
+            bottom: 100% !important;
+            top: auto !important;
+            margin-bottom: 6px;
+            z-index: 1070 !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // ── Members dropdowns (same behavior as the create task modal) ──
+        (function () {
+            const selects = document.querySelectorAll('select[data-members]');
+            if (!selects.length) return;
+
+            function setMessage(sel, text, disabled) {
+                sel.innerHTML = '';
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = text;
+                sel.appendChild(opt);
+                sel.disabled = disabled;
+                sel.value = '';
+            }
+
+            async function loadMembers() {
+                selects.forEach(sel => setMessage(sel, 'در حال دریافت اعضا...', true));
+
+                try {
+                    const res = await fetch('/Tasks/TeamMembers?teamId=' + encodeURIComponent('@Model.TeamId'), {
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => null);
+                        throw new Error(err?.message || 'خطا در دریافت اعضا');
+                    }
+
+                    const members = await res.json();
+
+                    if (members.length === 0) {
+                        selects.forEach(sel => setMessage(sel, 'عضوی در این تیم یافت نشد', true));
+                        return;
+                    }
+
+                    const sorted = [...members].sort((a, b) => (b.isCurrentUser - a.isCurrentUser));
+
+                    selects.forEach(sel => {
+                        setMessage(sel, sel.dataset.kind === 'assignee' ? 'انتخاب مسئول...' : 'انتخاب مدیر...', false);
+
+                        sorted.forEach(m => {
+                            const opt = document.createElement('option');
+                            opt.value = m.memberId;
+                            opt.textContent = m.isCurrentUser
+                                ? '★ ' + m.userDisplayname + ' (خودِ شما)'
+                                : m.userDisplayname + ' (' + m.userEmail + ')';
+                            opt.dataset.isCurrentUser = m.isCurrentUser;
+                            sel.appendChild(opt);
+                        });
+                    });
+                } catch (e) {
+                    selects.forEach(sel => setMessage(sel, e.message, true));
+                }
+            }
+
+            loadMembers();
+
+            // hint فقط برای مسئول انجام (مثل create modal)
+            const assigneeSelect = document.getElementById('newAssigneeSelect');
+            const assigneeHint = document.querySelector('#editAssignee .assigneeHint');
+            if (assigneeSelect && assigneeHint) {
+                assigneeSelect.addEventListener('change', function () {
+                    const selected = this.selectedOptions[0];
+                    const isMe = selected && selected.dataset.isCurrentUser === 'true';
+                    assigneeHint.style.display = isMe ? 'block' : 'none';
+                });
+            }
+        })();
+
+        // ── Deadline: Jalali picker (same as create modal), converted to UTC before submit ──
+        $(function () {
+            const $input = $('#deadlineJalali');
+            const $hidden = $('#deadlineUtc');
+
+            $input.persianDatepicker({
+                format: 'YYYY/MM/DD HH:mm',
+                timePicker: {
+                    enabled: true,
+                    step: 1,
+                    meridiem: { enabled: false }
+                },
+                observer: true,
+                autoClose: false,
+                initialValue: false,
+                onSelect: function (unix) {
+                    // unix: زمان انتخاب‌شده به میلی‌ثانیه (تهران) → UTC ISO برای سرور
+                    $hidden.val(new persianDate(unix).toDate().toISOString());
+                }
+            });
+
+            $('#deadlineForm').on('submit', function (e) {
+                if (!$hidden.val()) {
+                    e.preventDefault();
+                    $input.focus();
+                }
+            });
+        });
+    </script>
+}

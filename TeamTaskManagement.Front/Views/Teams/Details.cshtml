@@ -1,0 +1,781 @@
+﻿@using TeamTaskManagement.Application.Teams.Responses
+@using TeamTaskManagement.Application.Users.Responses
+@using TeamTaskManagement.Application.Teams.Queries.GetMyTeams
+@model TeamResponse
+
+@{
+    ViewData["Title"] = "جزئیات تیم";
+}
+
+<style>
+    .ttm-team-card {
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    html[data-theme="dark"] .ttm-team-card {
+        background: #1A1A1A;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .ttm-team-card:hover {
+        border-color: var(--ttm-primary);
+        box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+    }
+
+    html[data-theme="dark"] .ttm-team-card:hover {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .ttm-role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: #F3E8FF;
+        color: var(--ttm-primary);
+        border: 1px solid #E9D5FF;
+        white-space: nowrap;
+    }
+
+    html[data-theme="dark"] .ttm-role-badge {
+        background: #2D1B4E;
+        border-color: #4C2D6B;
+        color: #A78BFA;
+    }
+
+    .ttm-role-badge-access {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: #DDD6FE;
+        color: var(--ttm-primary);
+        border: 1px solid #C4B5FD;
+        white-space: nowrap;
+    }
+
+    html[data-theme="dark"] .ttm-role-badge-access {
+        background: #3B2667;
+        border-color: #5B3A99;
+        color: #D8B4FE;
+    }
+
+    .ttm-role-access-box {
+        background: #F9F5FF;
+        border-radius: 6px;
+        border-right: 3px solid var(--ttm-primary);
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    html[data-theme="dark"] .ttm-role-access-box {
+        background: #2D1B4E;
+        border-right-color: var(--ttm-primary);
+    }
+
+    .ttm-role-badge i {
+        margin-left: 0.3rem;
+        font-size: 0.65rem;
+    }
+
+    .ttm-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--ttm-primary), var(--ttm-primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .ttm-member-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--ttm-border);
+        color: var(--ttm-text);
+    }
+
+        .ttm-member-item:last-child {
+            border-bottom: none;
+        }
+
+        .ttm-member-item h6 {
+            color: var(--ttm-text);
+        }
+
+        .ttm-member-item small {
+            color: var(--ttm-muted);
+        }
+
+        .ttm-member-item:hover {
+            background: #F3E8FF;
+            margin: 0;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: none;
+        }
+
+    html[data-theme="dark"] .ttm-member-item:hover {
+        background: #2D1B4E;
+        box-shadow: none;
+    }
+
+    .btn-primary {
+        background-color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: var(--ttm-primary-dark);
+            border-color: var(--ttm-primary-dark);
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+        }
+
+    html[data-theme="dark"] .btn-primary:hover,
+    html[data-theme="dark"] .btn-primary:focus {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .btn-outline-primary {
+        color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--ttm-primary);
+            border-color: var(--ttm-primary);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+        }
+
+    html[data-theme="dark"] .btn-outline-primary:hover {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .ttm-empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+
+    .ttm-empty-icon {
+        font-size: 2rem;
+        color: var(--ttm-border);
+        margin-bottom: 0.75rem;
+        opacity: 0.6;
+    }
+
+    .modal-content {
+        background: var(--ttm-surface);
+        border: 1px solid var(--ttm-border);
+        color: var(--ttm-text);
+    }
+
+    .modal-header {
+        background: var(--ttm-surface);
+        border-bottom: 1px solid var(--ttm-border);
+    }
+
+    .modal-footer {
+        background: var(--ttm-surface);
+        border-top: 1px solid var(--ttm-border);
+    }
+
+    .modal-title {
+        color: var(--ttm-text);
+        font-weight: 600;
+    }
+
+    .btn-close {
+        filter: brightness(0.7);
+    }
+
+    html[data-theme="dark"] .btn-close {
+        filter: invert(1) brightness(0.8);
+    }
+
+    .form-control {
+        background: var(--ttm-surface);
+        color: var(--ttm-text);
+        border-color: var(--ttm-border);
+    }
+
+        .form-control:focus {
+            background: var(--ttm-surface);
+            color: var(--ttm-text);
+            border-color: var(--ttm-primary);
+            box-shadow: 0 0 0 0.25rem rgba(91, 33, 182, 0.1);
+        }
+
+    .form-label {
+        color: var(--ttm-text);
+    }
+
+    .form-select {
+        background: var(--ttm-surface);
+        color: var(--ttm-text);
+        border-color: var(--ttm-border);
+    }
+
+        .form-select:focus {
+            border-color: var(--ttm-primary);
+            box-shadow: 0 0 0 0.25rem rgba(91, 33, 182, 0.1);
+        }
+
+    .alert {
+        border-radius: 10px;
+        font-size: 0.88rem;
+    }
+
+    .ttm-page-header {
+        margin-bottom: 2rem;
+    }
+
+        .ttm-page-header h1 {
+            color: var(--ttm-text);
+            margin: 0;
+        }
+
+    .ttm-teams-grid {
+        margin-bottom: 2rem;
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-teams-grid {
+            margin-bottom: 6rem;
+        }
+    }
+
+    .card-title {
+        color: var(--ttm-text);
+    }
+
+    html[data-theme="dark"] .card-title {
+        color: var(--ttm-text);
+    }
+
+    .ttm-team-card h3 {
+        color: var(--ttm-text);
+    }
+
+    html[data-theme="dark"] .ttm-team-card h3 {
+        color: var(--ttm-text);
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-member-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1rem 1rem;
+        }
+
+            .ttm-member-item > div:first-child {
+                width: 100%;
+                margin-bottom: 0.75rem;
+            }
+
+            .ttm-member-item > div:last-child {
+                width: 100%;
+                gap: 0.5rem !important;
+            }
+
+        .ttm-role-badge,
+        .ttm-role-badge-access {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
+            white-space: normal;
+            max-width: 100%;
+        }
+
+            .ttm-role-badge i,
+            .ttm-role-badge-access i {
+                display: none;
+            }
+
+        .btn-outline-secondary,
+        .btn-outline-danger {
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    .datepicker-plot-area {
+        z-index: 1060;
+    }
+</style>
+
+<div class="ttm-page-header">
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+        <a href="/Teams" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-right"></i> بازگشت
+        </a>
+    </div>
+</div>
+
+@{
+    var isLeader = Model.CurrentUserMembership.MemberAccessLevel == MemberRoleResponse.Leader;
+    var isManager = Model.CurrentUserMembership.MemberAccessLevel == MemberRoleResponse.Manager || isLeader;
+}
+
+@* ── Team Info Card ── *@
+<div class="row g-4 ttm-teams-grid mb-4">
+    <div class="col-12 col-lg-8">
+        <div class="card ttm-team-card h-100 border-0">
+            <div class="card-body">
+
+                <div class="position-absolute top-0 end-0 p-3">
+                </div>
+
+                    
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+
+                        <h1 class="h3 card-title">@Model.Displayname</h1>
+
+                        <!-- Description -->
+                        @if (!string.IsNullOrWhiteSpace(Model.Description)) {
+                            <p class="text-muted mb-3" style="line-height: 1.7;">
+                                @Model.Description
+                            </p>
+                        }
+                        else {
+                            <p class="text-muted mb-3">
+                                <small style="opacity: 0.5;">توضیحی برای این تیم وجود ندارد</small>
+                            </p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Your Role -->
+                <div class="ttm-role-access-box">
+                    <small class="text-muted d-block mb-2">نقش شما در این تیم:</small>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="ttm-role-badge">
+                            <i class="bi bi-badge"></i> @Model.CurrentUserMembership.MemberRoleDisplayname
+                        </span>
+                        <span class="ttm-role-badge-access">
+                            <i class="bi bi-shield-check"></i>
+                            @switch (Model.CurrentUserMembership.MemberAccessLevel) {
+                                case MemberRoleResponse.Leader:
+                                    <text>مالک</text>
+                                    break;
+                                case MemberRoleResponse.Manager:
+                                    <text>سرپرست</text>
+                                    break;
+                                default:
+                                    <text>کارمند</text>
+                                    break;
+                            }
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="copyTeamIdBtn" title="کپی شناسه تیم">
+                        <i class="bi bi-clipboard"></i> شناسه تیم
+                    </button>
+                    <a href="/Tasks/ForTeam?teamId=@Model.Id" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-check2-square"></i> وظایف تیم
+                    </a>
+                    @if (isLeader) {
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editTeamModal">
+                            <i class="bi bi-pencil"></i> ویرایش تیم
+                        </button>
+                    }
+
+                    @if (isManager) {
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                            <i class="bi bi-envelope-plus"></i> دعوتنامه
+                        </button>
+                    }
+
+                    @if (!isLeader) {
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmLeaveModal">
+                            <i class="bi bi-box-arrow-right"></i> ترک تیم
+                        </button>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @* ── Members Count Card ── *@
+    <div class="col-12 col-lg-4">
+        <div class="card ttm-team-card h-100 border-0">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center h-100">
+                <div style="font-size: 2.5rem; color: var(--ttm-primary); margin-bottom: 0.5rem;">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h3 class="fw-700 mb-1">@Model.Members.Count</h3>
+                <p class="text-muted mb-0" style="font-size: 0.9rem;">عضو فعال</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Members Section ── *@
+<div class="row g-3 ttm-teams-grid mb-4">
+    <div class="col-12">
+        <div class="card ttm-team-card border-0">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-people"></i> اعضای تیم
+                </h5>
+
+                @if (Model.Members.Any()) {
+                    @foreach (var member in Model.Members.OrderBy(m => m.JoinedAtUtc)) {
+                        var memberIsLeader = member.MemberAccessLevel == MemberRoleResponse.Leader;
+
+                        <div class="ttm-member-item">
+                            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                                <div class="ttm-avatar">
+                                    @member.UserDisplayname.First()
+                                </div>
+                                <div class="flex-grow-1 min-width-0">
+                                    <h6 class="mb-1 fw-600">
+                                        @member.UserDisplayname
+                                    </h6>
+                                    <small class="d-block">
+                                        @member.UserEmail
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                <span class="ttm-role-badge">
+                                    <i class="bi bi-badge"></i> @member.MemberRoleDisplayname
+                                </span>
+                                <span class="ttm-role-badge-access">
+                                    <i class="bi bi-shield-check"></i> @member.MemberAccessLevelText
+                                </span>
+
+                                @if (isLeader && !memberIsLeader) {
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changeRoleModal" data-member-id="@member.MemberId" data-member-name="@member.UserDisplayname" data-current-level="@member.MemberAccessLevel.ToString()" data-current-role-title="@member.MemberRoleDisplayname">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmRemoveModal" data-member-id="@member.MemberId" data-member-name="@member.UserDisplayname">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else {
+                    <div class="ttm-empty-state">
+                        <div class="ttm-empty-icon">
+                            <i class="bi bi-inbox"></i>
+                        </div>
+                        <p class="text-muted mb-0">هیچ عضوی در این تیم وجود ندارد</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Pending Invites Section ── *@
+@if (Model.PendingInvites?.Any() == true) {
+    <div class="row g-3 ttm-teams-grid ">
+        <div class="col-12">
+            <div class="card ttm-team-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-envelope-open"></i> دعوتنامه‌های منتظر
+                    </h5>
+
+                    @foreach (var invite in Model.PendingInvites) {
+                        <div class="ttm-member-item">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-600">
+                                    @invite.Receiver.Displayname
+                                </h6>
+                                <small class="d-block">
+                                    @invite.Receiver.Email
+                                </small>
+                                <small class="d-block mt-1">
+                                    @invite.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")
+                                </small>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                <span class="ttm-role-badge">
+                                    <i class="bi bi-badge"></i> @invite.SuggestedRoleTitle
+                                </span>
+                                <span class="ttm-role-badge-access">
+                                    <i class="bi bi-shield-check"></i> @invite.SuggestedAccessLevel
+                                </span>
+
+                                @if (isLeader) {
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmCancelInviteModal" data-invite-id="@invite.InviteId" data-receiver-name="@invite.Receiver.Displayname" data-invite-team-id="@invite.TeamId">
+                                        <i class="bi bi-x-circle"></i> لغو
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* ── Modal: Edit Team ── *@
+<div class="modal fade" id="editTeamModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">ویرایش تیم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Teams/Update">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="TeamId" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label for="Displayname" class="form-label">نام تیم <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="displayname" name="displayname" value="@Model.Displayname" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">توضیحات <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="description" rows="3">@Model.Description</textarea>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="leaderTitle" class="form-label">عنوان نقش مالک(شما) <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="leaderTitle" name="LeaderTitle" required maxlength="50" placeholder="مثلاً: مدیر پروژه" value="@Model.CurrentUserMembership.MemberRoleDisplayname">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary">ذخیره</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* ── Modal: Send Invite ── *@
+<div class="modal fade" id="inviteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">ارسال دعوتنامه</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Invites/Send">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="teamId" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label for="receiverUserIdOrEmail" class="form-label">شناسه یا ایمیل کاربر <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="receiverUserIdOrEmail" name="receiverUserIdOrEmail" placeholder="GUID یا ایمیل" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="suggestedAccessLevel" class="form-label">سطح دسترسی <span class="text-danger">*</span></label>
+                        <select class="form-select" id="suggestedAccessLevel" name="suggestedAccessLevel" required>
+                            <option value="">. . .</option>
+                            <option value="Manager">سرپرست (انجام وظایف خود، تعیین وظایف کارمند)</option>
+                            <option value="Member">کارمند (انجام وظایف خود)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="suggestedRoleTitle" class="form-label">عنوان نقش <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="suggestedRoleTitle" name="suggestedRoleTitle" placeholder="مثال: توسعه‌دهنده" required/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary">ارسال</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* ── Modal: Change Member Role ── *@
+<div class="modal fade" id="changeRoleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">تغییر نقش کاربر «<span id="memberNameDisplay"></span>»</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Teams/ChangeMemberRole">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <input type="hidden" name="teamId" value="@Model.Id" />
+                    <input type="hidden" name="memberId" id="memberIdInput" />
+
+                    <div class="mb-3">
+                        <label for="newAccessLevel" class="form-label">سطح دسترسی <span class="text-danger">*</span></label>
+                        <select class="form-select" id="newAccessLevel" name="newAccessLevel" required>
+                            <option value="">. . .</option>
+                            <option value="Manager">سرپرست (انجام وظایف خود، تعیین وظایف کارمند)</option>
+                            <option value="Member">کارمند (انجام وظایف خود)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newRoleTitle" class="form-label">عنوان نقش <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newRoleTitle" name="newRoleTitle" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary">تایید</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* ── Modal: Confirm Leave Team ── *@
+<div class="modal fade" id="confirmLeaveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">ترک تیم</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Teams/Leave/@Model.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="alert alert-warning d-flex gap-2 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+                        <div>
+                            <strong>اطمینان دارید؟</strong>
+                            <p class="mb-0 mt-2">پس از ترک تیم، دسترسی شما حذف خواهد شد.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-danger">ترک تیم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* ── Modal: Confirm Remove Member ── *@
+<div class="modal fade" id="confirmRemoveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">حذف عضو</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/teams/@(Model.Id)/remove-member/">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="alert alert-danger d-flex gap-2 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+                        <div>
+                            <strong><span id="removeNameDisplay"></span> حذف شود؟</strong>
+                            <p class="mb-0 mt-2">این عضو از تیم حذف خواهد شد.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="memberId" id="removeIdInput" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* ── Modal: Confirm Cancel Invite ── *@
+<div class="modal fade" id="confirmCancelInviteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title">لغو دعوتنامه</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="/Invites/Cancel">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="alert alert-warning d-flex gap-2 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+                        <div>
+                            <strong>دعوتنامه <span id="inviteNameDisplay"></span> لغو شود؟</strong>
+                            <p class="mb-0 mt-2">این دعوتنامه حذف خواهد شد.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="inviteId" id="inviteIdInput" />
+                    <input type="hidden" name="teamId" id="inviteTeamIdInput" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-warning">لغو دعوتنامه</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Change Role Modal
+        document.getElementById('changeRoleModal')?.addEventListener('show.bs.modal', (e) => {
+            const button = e.relatedTarget;
+            document.getElementById('memberIdInput').value = button.dataset.memberId;
+            document.getElementById('memberNameDisplay').textContent = button.dataset.memberName;
+            document.getElementById('newAccessLevel').value = button.dataset.currentLevel;
+            document.getElementById('newRoleTitle').value = button.dataset.currentRoleTitle;
+        });
+
+        // Remove Member Modal
+        document.getElementById('confirmRemoveModal')?.addEventListener('show.bs.modal', (e) => {
+            const button = e.relatedTarget;
+            document.getElementById('removeIdInput').value = button.dataset.memberId;
+            document.getElementById('removeNameDisplay').textContent = button.dataset.memberName;
+        });
+
+        // Cancel Invite Modal
+        document.getElementById('confirmCancelInviteModal')?.addEventListener('show.bs.modal', (e) => {
+            const button = e.relatedTarget;
+            document.getElementById('inviteIdInput').value = button.dataset.inviteId;
+            document.getElementById('inviteNameDisplay').textContent = button.dataset.receiverName;
+            document.getElementById('inviteTeamIdInput').value = button.dataset.inviteTeamId;
+        });
+
+        // Copy TeamId
+        document.getElementById('copyTeamIdBtn')?.addEventListener('click', function () {
+            const teamId = '@Model.Id';
+            navigator.clipboard.writeText(teamId).then(() => {
+                const btn = this;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check">کپی شد</i>';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                }, 2000);
+            });
+        });
+    </script>
+}

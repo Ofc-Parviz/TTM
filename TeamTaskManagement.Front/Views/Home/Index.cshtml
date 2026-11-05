@@ -1,0 +1,822 @@
+﻿@{
+    ViewData["Title"] = "خانه";
+    bool isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+    string repoUrl = "https://github.com/ofc-parviz/ttm";
+}
+
+<style>
+    /* ── Hero ── */
+    .ttm-hero {
+        padding: 2.75rem 1.25rem 2.25rem;
+        border-radius: 16px;
+        background: radial-gradient(120% 90% at 100% 0%, rgba(91, 33, 182, .09), transparent 55%), linear-gradient(180deg, #FFFFFF, var(--ttm-surface));
+        border: 1px solid var(--ttm-border);
+    }
+
+    html[data-theme="dark"] .ttm-hero {
+        background: radial-gradient(120% 90% at 100% 0%, rgba(149, 101, 224, .16), transparent 55%), linear-gradient(180deg, #1A1A1A, var(--ttm-surface));
+    }
+
+    .ttm-hero h1 {
+        font-weight: 700;
+        color: var(--ttm-text);
+        letter-spacing: -0.01em;
+        line-height: 1.7;
+    }
+
+    .ttm-lead {
+        max-width: 42rem;
+        margin-inline: auto;
+        font-size: .95rem;
+        color: var(--ttm-muted);
+    }
+
+    .ttm-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .72rem;
+        font-weight: 600;
+        padding: .3rem .75rem;
+        border-radius: 999px;
+        background: #F3E8FF;
+        color: var(--ttm-primary);
+        border: 1px solid #E9D5FF;
+    }
+
+    html[data-theme="dark"] .ttm-eyebrow {
+        background: #2D1B4E;
+        border-color: #4C2D6B;
+        color: #A78BFA;
+    }
+
+    /* ── Chips ── */
+    .ttm-chip {
+        display: inline-block;
+        font-size: .72rem;
+        padding: .28rem .6rem;
+        border-radius: 6px;
+        background: #fff;
+        border: 1px solid var(--ttm-border);
+        color: var(--ttm-muted);
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        direction: ltr;
+        white-space: nowrap;
+    }
+
+    html[data-theme="dark"] .ttm-chip {
+        background: #1A1A1A;
+    }
+
+    .ttm-chip-fa {
+        font-family: 'Vazirmatn', sans-serif;
+        direction: rtl;
+        white-space: normal;
+    }
+
+    /* ── Buttons ── */
+    .btn-ttm-primary {
+        background: var(--ttm-primary);
+        color: #fff;
+        border: 1px solid var(--ttm-primary);
+        font-weight: 600;
+        padding: .6rem 1.25rem;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background .2s, box-shadow .2s;
+    }
+
+        .btn-ttm-primary:hover {
+            background: var(--ttm-primary-dark);
+            border-color: var(--ttm-primary-dark);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(91, 33, 182, .25);
+        }
+
+    .btn-ttm-ghost {
+        color: var(--ttm-primary);
+        border: 1px solid var(--ttm-border);
+        font-weight: 500;
+        padding: .6rem 1.25rem;
+        border-radius: 8px;
+        text-decoration: none;
+        background: #fff;
+        transition: border-color .2s, background .2s;
+    }
+
+    html[data-theme="dark"] .btn-ttm-ghost {
+        background: #1A1A1A;
+    }
+
+    .btn-ttm-ghost:hover {
+        border-color: var(--ttm-primary);
+        background: #F3E8FF;
+        color: var(--ttm-primary);
+    }
+
+    html[data-theme="dark"] .btn-ttm-ghost:hover {
+        background: #2D1B4E;
+    }
+
+    /* ── Stats strip ── */
+    .ttm-stats {
+        border: 1px solid var(--ttm-border);
+        border-radius: 12px;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    html[data-theme="dark"] .ttm-stats {
+        background: #1A1A1A;
+    }
+
+    .ttm-stat {
+        padding: 1rem .75rem;
+        text-align: center;
+        border-inline-start: 1px solid var(--ttm-border);
+    }
+
+        .ttm-stat:first-child {
+            border-inline-start: none;
+        }
+
+    .ttm-stat-value {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--ttm-primary);
+        line-height: 1.2;
+    }
+
+    .ttm-stat-label {
+        font-size: .75rem;
+        color: var(--ttm-muted);
+    }
+
+    /* ── Section headings ── */
+    .ttm-section-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--ttm-text);
+    }
+
+    .ttm-section-sub {
+        font-size: .86rem;
+        color: var(--ttm-muted);
+    }
+
+    /* ── Cards ── */
+    .ttm-card {
+        height: 100%;
+        border: 1px solid var(--ttm-border);
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    html[data-theme="dark"] .ttm-card {
+        background: #1A1A1A;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+    }
+
+    .ttm-card:hover {
+        border-color: var(--ttm-primary);
+        box-shadow: 0 8px 24px rgba(91, 33, 182, .15);
+    }
+
+    .ttm-card h3 {
+        font-size: .98rem;
+        font-weight: 600;
+        color: var(--ttm-text);
+    }
+
+    .ttm-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #F3E8FF;
+        color: var(--ttm-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+    }
+
+    html[data-theme="dark"] .ttm-icon {
+        background: #2D1B4E;
+        color: #A78BFA;
+    }
+
+    /* ── Architecture ── */
+    .ttm-layer {
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        background: #fff;
+        padding: .9rem 1rem;
+        height: 100%;
+    }
+
+    html[data-theme="dark"] .ttm-layer {
+        background: #1A1A1A;
+    }
+
+    .ttm-layer-accent {
+        border-color: var(--ttm-primary);
+        background: #F9F5FF;
+    }
+
+    html[data-theme="dark"] .ttm-layer-accent {
+        background: #2D1B4E;
+    }
+
+    .ttm-layer-label {
+        font-size: .8rem;
+        font-weight: 600;
+        color: var(--ttm-primary);
+        margin-bottom: .2rem;
+    }
+
+    .ttm-layer-note {
+        font-size: .72rem;
+        color: var(--ttm-muted);
+        margin-bottom: .55rem;
+        direction: ltr;
+        text-align: right;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .ttm-layer-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .4rem;
+    }
+
+    .ttm-layer-arrow {
+        text-align: center;
+        color: var(--ttm-muted);
+        font-size: .85rem;
+        line-height: 1;
+        padding: .1rem 0;
+    }
+
+    /* ── Auth channels ── */
+    .ttm-auth-box {
+        border: 1px solid var(--ttm-border);
+        border-radius: 12px;
+        background: #fff;
+        padding: 1.1rem 1.1rem;
+        height: 100%;
+    }
+
+    html[data-theme="dark"] .ttm-auth-box {
+        background: #1A1A1A;
+    }
+
+    .ttm-auth-box h3 {
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--ttm-text);
+    }
+
+    /* ── Quality list ── */
+    .ttm-quality-item {
+        display: flex;
+        gap: .75rem;
+        align-items: flex-start;
+        padding: .85rem 1rem;
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        background: #fff;
+        height: 100%;
+    }
+
+    html[data-theme="dark"] .ttm-quality-item {
+        background: #1A1A1A;
+    }
+
+    .ttm-quality-item i {
+        color: var(--ttm-primary);
+        font-size: 1.05rem;
+        margin-top: .15rem;
+    }
+
+    /* ── Solution projects ── */
+    .ttm-project {
+        display: flex;
+        align-items: flex-start;
+        gap: .6rem;
+        padding: .7rem .85rem;
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        background: #fff;
+        height: 100%;
+    }
+
+    html[data-theme="dark"] .ttm-project {
+        background: #1A1A1A;
+    }
+
+    .ttm-project i {
+        color: var(--ttm-primary);
+        font-size: 1rem;
+        margin-top: .15rem;
+    }
+
+    .ttm-project-name {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: .75rem;
+        color: var(--ttm-text);
+        direction: ltr;
+        text-align: left;
+        word-break: break-all;
+    }
+
+    .ttm-project-desc {
+        font-size: .76rem;
+        color: var(--ttm-muted);
+    }
+
+    /* ── Lifecycle ── */
+    .ttm-flow {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: .75rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .ttm-flow li {
+            display: flex;
+            gap: .75rem;
+            align-items: flex-start;
+            padding: .9rem 1rem;
+            border: 1px solid var(--ttm-border);
+            border-radius: 10px;
+            background: #fff;
+        }
+
+    html[data-theme="dark"] .ttm-flow li {
+        background: #1A1A1A;
+    }
+
+    .ttm-step-num {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--ttm-primary);
+        color: #fff;
+        font-weight: 600;
+        font-size: .85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── CTA ── */
+    .ttm-cta-band {
+        border: 1px solid var(--ttm-border);
+        border-radius: 14px;
+        background: #F9F5FF;
+        padding: 2rem 1.25rem;
+    }
+
+    html[data-theme="dark"] .ttm-cta-band {
+        background: #2D1B4E;
+    }
+
+    @@media (min-width: 576px) {
+        .ttm-hero {
+            padding: 3.5rem 2.5rem 3rem;
+        }
+
+        .ttm-flow {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @@media (min-width: 992px) {
+        .ttm-hero {
+            padding: 4.5rem 3.5rem 4rem;
+        }
+    }
+</style>
+
+@* ── Hero ── *@
+<section class="ttm-hero text-center mb-4">
+    <span class="ttm-eyebrow mb-3">
+        <i class="bi bi-git"></i> متن‌باز · .NET 8 · Clean Architecture
+    </span>
+
+    @if (isAuthenticated) {
+        <h1 class="h3 mb-2">خوش آمدید</h1>
+        <p class="ttm-lead mb-4">
+            تیم‌ها، دعوتنامه‌ها و وظایف خود را از داشبورد دنبال کنید. وضعیت هر وظیفه همیشه شفاف و قابل پیگیری است.
+        </p>
+        <div class="d-grid d-sm-inline-flex gap-2 justify-content-center mb-4">
+            <a href="/Teams" class="btn-ttm-primary">
+                <i class="bi bi-speedometer2"></i> ورود به داشبورد
+            </a>
+            <a href="/Tasks" class="btn-ttm-ghost">
+                <i class="bi bi-check2-square"></i> وظایف من
+            </a>
+        </div>
+    }
+    else {
+        <h1 class="h3 mb-2">پلتفرم سازمانی مدیریت وظایف تیم</h1>
+        <p class="ttm-lead mb-4">
+            تیم بسازید، اعضا را با سطح دسترسی مالک، سرپرست و کارمند دعوت کنید و وظایف را از ایجاد تا تأیید نهایی دنبال کنید. بک‌اند بر پایه Clean Architecture، DDD و CQRS ساخته شده و با تست‌های واحد و یکپارچه پوشش داده شده است.
+        </p>
+        <div class="d-grid d-sm-inline-flex gap-2 justify-content-center mb-4">
+            <a href="/SignIn" class="btn-ttm-primary">
+                <i class="bi bi-person-check"></i> ورود / ثبت‌نام
+            </a>
+            <a href="/Home/Docs" class="btn-ttm-ghost">
+                <i class="bi bi-book"></i> مستندات
+            </a>
+            <a href="@repoUrl" target="_blank" rel="noopener noreferrer" class="btn-ttm-ghost">
+                <i class="bi bi-github"></i> مخزن GitHub
+            </a>
+        </div>
+    }
+
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <span class="ttm-chip">.NET 8</span>
+        <span class="ttm-chip">ASP.NET Core MVC</span>
+        <span class="ttm-chip">ASP.NET Core Web API</span>
+        <span class="ttm-chip">Cookie Auth</span>
+        <span class="ttm-chip">JWT Bearer</span>
+        <span class="ttm-chip">MediatR</span>
+        <span class="ttm-chip">FluentValidation</span>
+        <span class="ttm-chip">EF Core</span>
+        <span class="ttm-chip">SQL Server</span>
+    </div>
+</section>
+
+@* ── Stats ── *@
+<section class="mb-5">
+    <div class="ttm-stats row g-0">
+        <div class="col-3 ttm-stat">
+            <div class="ttm-stat-value">۳</div>
+            <div class="ttm-stat-label">سطح دسترسی</div>
+        </div>
+        <div class="col-3 ttm-stat">
+            <div class="ttm-stat-value">۲</div>
+            <div class="ttm-stat-label">کانال احراز هویت</div>
+        </div>
+        <div class="col-3 ttm-stat">
+            <div class="ttm-stat-value">۸</div>
+            <div class="ttm-stat-label">پروژه در سلوشن</div>
+        </div>
+        <div class="col-3 ttm-stat">
+            <div class="ttm-stat-value">20+</div>
+            <div class="ttm-stat-label">هزار خط کد</div>
+        </div>
+    </div>
+</section>
+
+@* ── Capabilities ── *@
+<section id="features" class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="ttm-section-title mb-1">قابلیت‌ها</h2>
+        <p class="ttm-section-sub mb-0">از احراز هویت تا تحویل وظیفه، در یک جریان یکپارچه</p>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ttm-card border-0">
+                <div class="card-body">
+                    <div class="ttm-icon mb-3"><i class="bi bi-key"></i></div>
+                    <h3 class="mb-2">احراز هویت</h3>
+                    <p class="text-muted small mb-0">ثبت‌نام و ورود با ایمیل و رمز عبور. رابط وب با Cookie و API با توکن JWT Bearer احراز هویت می‌شود.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ttm-card border-0">
+                <div class="card-body">
+                    <div class="ttm-icon mb-3"><i class="bi bi-people"></i></div>
+                    <h3 class="mb-2">تیم و فضای کار</h3>
+                    <p class="text-muted small mb-0">ساخت تیم، تعریف عنوان نقش برای هر عضو و مدیریت اعضا از داخل صفحه جزئیات تیم.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ttm-card border-0">
+                <div class="card-body">
+                    <div class="ttm-icon mb-3"><i class="bi bi-diagram-3"></i></div>
+                    <h3 class="mb-2">سلسله‌مراتب سه‌سطحی</h3>
+                    <p class="text-muted small mb-0">مالک، سرپرست و کارمند. هر سطح تنها به اختیارات تعریف‌شده خود دسترسی دارد و واگذاری وظیفه بر همین اساس انجام می‌شود.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ttm-card border-0">
+                <div class="card-body">
+                    <div class="ttm-icon mb-3"><i class="bi bi-envelope-paper"></i></div>
+                    <h3 class="mb-2">سیستم دعوتنامه</h3>
+                    <p class="text-muted small mb-0">دعوت با ایمیل یا شناسه کاربر، پیشنهاد سطح دسترسی و عنوان نقش، و پذیرش یا رد دعوتنامه.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ttm-card border-0">
+                <div class="card-body">
+                    <div class="ttm-icon mb-3"><i class="bi bi-arrow-repeat"></i></div>
+                    <h3 class="mb-2">چرخه کامل وظیفه</h3>
+                    <p class="text-muted small mb-0">شروع، درخواست تکمیل یا شکست، بستن، و درخواست تلاش مجدد با پذیرش یا رد. هر مرحله قواعد مشخص خود را دارد.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ttm-card border-0">
+                <div class="card-body">
+                    <div class="ttm-icon mb-3"><i class="bi bi-phone"></i></div>
+                    <h3 class="mb-2">رابط واکنش‌گرا</h3>
+                    <p class="text-muted small mb-0">طراحی موبایل‌فرست با ناوبری پایین صفحه، حالت تاریک و قابلیت نصب به‌عنوان اپلیکیشن وب.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ── Architecture ── *@
+<section id="architecture" class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="ttm-section-title mb-1">معماری پروژه</h2>
+        <p class="ttm-section-sub mb-0">Clean Architecture با قانون وابستگی یک‌طرفه؛ لایه‌های داخلی به هیچ لایه بیرونی وابسته نیستند</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+            <div class="d-flex flex-column gap-1">
+
+                <div class="ttm-layer ttm-layer-accent">
+                    <div class="ttm-layer-label"><i class="bi bi-window"></i> نمایش و رابط (Presentation)</div>
+                    <div class="ttm-layer-note">Front/TeamTaskManagement.Web</div>
+                    <div class="ttm-layer-items">
+                        <span class="ttm-chip">MVC · Cookie</span>
+                        <span class="ttm-chip">Web API · JWT</span>
+                        <span class="ttm-chip">Razor Views</span>
+                    </div>
+                </div>
+                <div class="ttm-layer-arrow"><i class="bi bi-arrow-down"></i></div>
+
+                <div class="ttm-layer">
+                    <div class="ttm-layer-label"><i class="bi bi-cpu"></i> کاربرد (Application)</div>
+                    <div class="ttm-layer-note">TeamTaskManagement.Application</div>
+                    <div class="ttm-layer-items">
+                        <span class="ttm-chip">CQRS · MediatR</span>
+                        <span class="ttm-chip">Pipeline Behaviors</span>
+                        <span class="ttm-chip">FluentValidation</span>
+                    </div>
+                </div>
+                <div class="ttm-layer-arrow"><i class="bi bi-arrow-down"></i></div>
+
+                <div class="ttm-layer ttm-layer-accent">
+                    <div class="ttm-layer-label"><i class="bi bi-gem"></i> دامنه (Domain)</div>
+                    <div class="ttm-layer-note">TeamTaskManagement.Domain · بدون وابستگی به فریم‌ورک</div>
+                    <div class="ttm-layer-items">
+                        <span class="ttm-chip">DDD · Aggregate · Entity</span>
+                        <span class="ttm-chip">Value Object</span>
+                        <span class="ttm-chip">Specification Pattern</span>
+                    </div>
+                </div>
+                <div class="ttm-layer-arrow"><i class="bi bi-arrow-down-up"></i></div>
+
+                <div class="row g-2">
+                    <div class="col-12 col-md-6">
+                        <div class="ttm-layer">
+                            <div class="ttm-layer-label"><i class="bi bi-plug"></i> زیرساخت (Infrastructure)</div>
+                            <div class="ttm-layer-note">TeamTaskManagement.Infrastructure</div>
+                            <div class="ttm-layer-items">
+                                <span class="ttm-chip ttm-chip-fa">سرویس‌های خارجی</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="ttm-layer">
+                            <div class="ttm-layer-label"><i class="bi bi-database"></i> پایداری (Persistence)</div>
+                            <div class="ttm-layer-note">TeamTaskManagement.Persistence</div>
+                            <div class="ttm-layer-items">
+                                <span class="ttm-chip">EF Core</span>
+                                <span class="ttm-chip">SQL Server</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ── Auth channels ── *@
+<section class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="ttm-section-title mb-1">احراز هویت در دو کانال</h2>
+        <p class="ttm-section-sub mb-0">یک هسته احراز هویت با دو روش انتقال هویت، متناسب با نوع کلاینت</p>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <div class="ttm-auth-box">
+                <h3 class="mb-2"><i class="bi bi-window me-1"></i> رابط وب (MVC)</h3>
+                <p class="text-muted small mb-3">پس از ورود، هویت کاربر در Cookie نگهداری می‌شود و مرورگر آن را در هر درخواست ارسال می‌کند.</p>
+                <span class="ttm-chip">Cookie Authentication</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="ttm-auth-box">
+                <h3 class="mb-2"><i class="bi bi-plug me-1"></i> رابط برنامه‌نویسی (API)</h3>
+                <p class="text-muted small mb-3">کلاینت‌ها توکن دسترسی دریافت می‌کنند و آن را در هدر Authorization با پیشوند Bearer ارسال می‌کنند.</p>
+                <span class="ttm-chip">JWT Bearer</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ── Quality ── *@
+<section class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="ttm-section-title mb-1">کیفیت و تضمین صحت</h2>
+        <p class="ttm-section-sub mb-0">استانداردهای سخت‌گیرانه در کد، اعتبارسنجی و تست</p>
+    </div>
+
+    <div class="row g-2">
+        <div class="col-12 col-md-6">
+            <div class="ttm-quality-item">
+                <i class="bi bi-funnel"></i>
+                <div>
+                    <h3 class="h6 mb-1">Pipeline Behaviors</h3>
+                    <p class="text-muted small mb-0">اعتبارسنجی، مجوزدهی و سایر رفتارهای مشترک به‌صورت یکنواخت در مسیر هر Command و Query اجرا می‌شوند.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="ttm-quality-item">
+                <i class="bi bi-check2-all"></i>
+                <div>
+                    <h3 class="h6 mb-1">اعتبارسنجی با FluentValidation</h3>
+                    <p class="text-muted small mb-0">قواعد ورودی به‌صورت صریح و جداگانه تعریف می‌شوند تا منطق اعتبارسنجی از کنترلرها جدا بماند.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="ttm-quality-item">
+                <i class="bi bi-clipboard2-check"></i>
+                <div>
+                    <h3 class="h6 mb-1">تست واحد دامنه</h3>
+                    <p class="text-muted small mb-0">قوانین کسب‌وکار و تغییر وضعیت با FluentAssertions در سطح واحد آزمایش می‌شوند.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="ttm-quality-item">
+                <i class="bi bi-shield-check"></i>
+                <div>
+                    <h3 class="h6 mb-1">تست یکپارچه</h3>
+                    <p class="text-muted small mb-0">جریان کامل API و تعامل با پایگاه داده در تست‌های یکپارچه پوشش داده می‌شود.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ── Solution structure ── *@
+<section class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="ttm-section-title mb-1">ساختار سلوشن</h2>
+        <p class="ttm-section-sub mb-0">جداسازی پروژه‌ها بر اساس مسئولیت و قابلیت تست</p>
+    </div>
+
+    <div class="row g-2">
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-window"></i>
+                <div>
+                    <div class="ttm-project-name">Front/TeamTaskManagement.Web</div>
+                    <div class="ttm-project-desc">MVC، Web API، Cookie و JWT</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-share"></i>
+                <div>
+                    <div class="ttm-project-name">Shared/TeamTaskManagement.Shared</div>
+                    <div class="ttm-project-desc">قراردادهای مشترک میان لایه‌ها</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-cpu"></i>
+                <div>
+                    <div class="ttm-project-name">TeamTaskManagement.Application</div>
+                    <div class="ttm-project-desc">Commands، Queries، Behaviors و اعتبارسنجی</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-gem"></i>
+                <div>
+                    <div class="ttm-project-name">TeamTaskManagement.Domain</div>
+                    <div class="ttm-project-desc">مدل دامنه، قوانین و Specification</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-plug"></i>
+                <div>
+                    <div class="ttm-project-name">TeamTaskManagement.Infrastructure</div>
+                    <div class="ttm-project-desc">پیاده‌سازی سرویس‌های خارجی</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-database"></i>
+                <div>
+                    <div class="ttm-project-name">TeamTaskManagement.Persistence</div>
+                    <div class="ttm-project-desc">EF Core و پیکربندی SQL Server</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-check2-circle"></i>
+                <div>
+                    <div class="ttm-project-name">Tests/TeamTaskManagement.Domain.Tests</div>
+                    <div class="ttm-project-desc">تست‌های واحد دامنه</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ttm-project">
+                <i class="bi bi-shield-check"></i>
+                <div>
+                    <div class="ttm-project-name">Tests/TeamTaskManagement.IntegrationTests</div>
+                    <div class="ttm-project-desc">تست‌های یکپارچه API و پایگاه داده</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ── Task lifecycle ── *@
+<section class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="ttm-section-title mb-1">چرخه کار با وظیفه</h2>
+        <p class="ttm-section-sub mb-0">هر وظیفه از ایجاد تا بستن، با تأیید در هر مرحله</p>
+    </div>
+
+    <ol class="ttm-flow">
+        <li>
+            <span class="ttm-step-num">۱</span>
+            <div>
+                <h3 class="h6 mb-1">ایجاد و واگذاری</h3>
+                <p class="text-muted small mb-0">سرپرست وظیفه را می‌سازد و مسئول انجام آن را تعیین می‌کند.</p>
+            </div>
+        </li>
+        <li>
+            <span class="ttm-step-num">۲</span>
+            <div>
+                <h3 class="h6 mb-1">شروع و اعلام نتیجه</h3>
+                <p class="text-muted small mb-0">مسئول کار را شروع می‌کند و در پایان، تکمیل یا شکست آن را اعلام می‌کند.</p>
+            </div>
+        </li>
+        <li>
+            <span class="ttm-step-num">۳</span>
+            <div>
+                <h3 class="h6 mb-1">تأیید یا تلاش مجدد</h3>
+                <p class="text-muted small mb-0">سرپرست وظیفه را می‌بندد یا در صورت نیاز درخواست تلاش مجدد می‌دهد.</p>
+            </div>
+        </li>
+    </ol>
+</section>
+
+@* ── Closing CTA ── *@
+<section class="ttm-cta-band text-center mb-2">
+    @if (isAuthenticated) {
+        <h2 class="ttm-section-title mb-2">ادامه کار با تیم خود</h2>
+        <p class="ttm-section-sub mb-3">وظایف باز و دعوتنامه‌های منتظر را از داشبورد بررسی کنید.</p>
+        <div class="d-grid d-sm-inline-flex gap-2 justify-content-center">
+            <a href="/Teams" class="btn-ttm-primary"><i class="bi bi-arrow-left"></i> به داشبورد بروید</a>
+            <a href="/Home/Docs" class="btn-ttm-ghost"><i class="bi bi-book"></i> مستندات</a>
+            <a href="@repoUrl" target="_blank" rel="noopener noreferrer" class="btn-ttm-ghost"><i class="bi bi-github"></i> مخزن GitHub</a>
+        </div>
+    }
+    else {
+        <h2 class="ttm-section-title mb-2">همین حالا شروع کنید</h2>
+        <p class="ttm-section-sub mb-3">در چند دقیقه تیم خود را بسازید و اولین وظیفه را تعریف کنید.</p>
+        <div class="d-grid d-sm-inline-flex gap-2 justify-content-center">
+            <a href="/SignIn" class="btn-ttm-primary"><i class="bi bi-person-check"></i> ورود / ثبت‌نام</a>
+            <a href="/Home/Docs" class="btn-ttm-ghost"><i class="bi bi-book"></i> مستندات</a>
+            <a href="@repoUrl" target="_blank" rel="noopener noreferrer" class="btn-ttm-ghost"><i class="bi bi-github"></i> مخزن GitHub</a>
+        </div>
+    }
+</section>

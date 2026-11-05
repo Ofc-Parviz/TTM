@@ -1,0 +1,1251 @@
+﻿@{
+    ViewData["Title"] = "مستندات";
+    var isAuth = User?.Identity?.IsAuthenticated ?? false;
+    var ctaHref = isAuth ? "/Teams" : "/SignIn";
+    var ctaText = isAuth ? "رفتن به تیم‌ها" : "ورود / ثبت‌نام";
+    string repoUrl = "https://github.com/ofc-parviz/ttm";
+}
+
+@section Styles {
+    <style>
+        .ttm-doc-layout {
+            align-items: flex-start;
+        }
+
+        .ttm-doc-aside {
+            align-self: flex-start;
+        }
+
+        .ttm-doc-aside {
+            color-scheme: light;
+        }
+
+        html[data-theme="dark"] .ttm-doc-aside {
+            color-scheme: dark;
+        }
+
+        @@media (min-width: 992px) {
+            .ttm-doc-aside {
+                position: sticky;
+                top: calc(var(--ttm-nav-h) + 1.5rem);
+                max-height: calc(100vh - var(--ttm-nav-h) - 3rem);
+                overflow-y: auto;
+                scrollbar-width: thin;
+            }
+        }
+
+        .ttm-doc-nav-audience {
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .03em;
+            color: var(--ttm-primary);
+            margin: 1.25rem 0 .35rem;
+            padding-inline-start: .75rem;
+        }
+
+            .ttm-doc-nav-audience:first-child {
+                margin-top: 0;
+            }
+
+        .ttm-doc-nav-link {
+            display: block;
+            padding: .3rem .75rem;
+            color: var(--ttm-text);
+            text-decoration: none;
+            font-size: .85rem;
+            border-inline-start: 2px solid transparent;
+            transition: color .15s, border-color .15s, background .15s;
+        }
+
+            .ttm-doc-nav-link:hover {
+                color: var(--ttm-primary);
+                background: rgba(91, 33, 182, .06);
+            }
+
+            .ttm-doc-nav-link.is-active {
+                color: var(--ttm-primary);
+                border-inline-start-color: var(--ttm-primary);
+                font-weight: 600;
+            }
+
+        html[data-theme="dark"] .ttm-doc-nav-link:hover,
+        html[data-theme="dark"] .ttm-doc-nav-link.is-active {
+            color: #A78BFA;
+            background: rgba(149, 101, 224, .12);
+        }
+
+        @@media (max-width: 991px) {
+            .ttm-doc-aside {
+                position: sticky;
+                top: var(--ttm-nav-h);
+                margin-top: -1.5rem;
+                z-index: 1020;
+                background: var(--ttm-surface);
+                overflow-x: auto;
+                scrollbar-width: none;
+                border-bottom: 1px solid var(--ttm-border);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
+                padding-top: .5rem;
+                padding-bottom: .5rem;
+                width: 100vw;
+                margin-inline: calc(50% - 50vw);
+                padding-inline: .75rem;
+            }
+
+            .ttm-doc-part,
+            .ttm-doc-section {
+                scroll-margin-top: calc(var(--ttm-nav-h) + 4.5rem);
+            }
+
+                .ttm-doc-aside::-webkit-scrollbar {
+                    display: none;
+                }
+
+            .ttm-doc-nav {
+                display: flex;
+                gap: .25rem;
+                white-space: nowrap;
+            }
+
+            .ttm-doc-nav-audience {
+                display: none;
+            }
+
+            .ttm-doc-nav-link {
+                border-inline-start: none;
+                border-radius: 999px;
+                padding: .3rem .9rem;
+            }
+
+                .ttm-doc-nav-link.is-active {
+                    background: rgba(91, 33, 182, .1);
+                }
+
+                .ttm-doc-nav-link.is-active {
+                    font-weight: 400;
+                }
+
+            .ttm-doc-aside {
+                transform: translateZ(0);
+                overscroll-behavior-x: contain;
+            }
+
+            .ttm-doc-hero{
+            
+                margin-top: 1.5rem;
+            }
+        }
+
+        @@media (max-width: 991px) {
+            html[data-theme="dark"] .ttm-doc-aside {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, .45);
+            }
+        }
+
+        .ttm-doc-hero {
+            background: var(--ttm-primary);
+            color: #fff;
+            border-radius: 12px;
+        }
+
+        html[data-theme="dark"] .ttm-doc-hero {
+            background: #2D1B4E;
+        }
+
+        .ttm-doc-hero .btn {
+            background: #fff;
+            color: var(--ttm-primary);
+            border: none;
+            font-weight: 600;
+        }
+
+            .ttm-doc-hero .btn:hover {
+                background: #F3E8FF;
+                color: var(--ttm-primary-dark);
+            }
+
+        html[data-theme="dark"] .ttm-doc-hero .btn {
+            background: var(--ttm-primary);
+            color: #fff;
+        }
+
+        .ttm-audience-card {
+            display: block;
+            height: 100%;
+            background: #fff;
+            border: 1px solid var(--ttm-border);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            text-decoration: none;
+            color: var(--ttm-text);
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+            .ttm-audience-card:hover {
+                border-color: var(--ttm-primary);
+                box-shadow: 0 6px 18px rgba(91, 33, 182, .15);
+                color: var(--ttm-text);
+            }
+
+        html[data-theme="dark"] .ttm-audience-card {
+            background: #1A1A1A;
+        }
+
+        .ttm-audience-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(91, 33, 182, .1);
+            color: var(--ttm-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: .6rem;
+        }
+
+        html[data-theme="dark"] .ttm-audience-icon {
+            background: rgba(149, 101, 224, .18);
+            color: #A78BFA;
+        }
+
+        .ttm-doc-part {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: 1rem 0 .25rem;
+            scroll-margin-top: calc(var(--ttm-nav-h) + 1.5rem);
+        }
+
+        .ttm-doc-part-label {
+            font-size: .72rem;
+            font-weight: 700;
+            color: #fff;
+            background: var(--ttm-primary);
+            border-radius: 4px;
+            padding: .15rem .5rem;
+            white-space: nowrap;
+        }
+
+        .ttm-doc-part h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--ttm-text);
+            margin: 0;
+        }
+
+        .ttm-doc-part-rule {
+            border-top: 1px solid var(--ttm-border);
+            margin: .75rem 0 0;
+        }
+
+        .ttm-doc-section {
+            background: #fff;
+            border: 1px solid var(--ttm-border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.25rem;
+            scroll-margin-top: calc(var(--ttm-nav-h) + 1.5rem);
+        }
+
+        html[data-theme="dark"] .ttm-doc-section {
+            background: #1A1A1A;
+        }
+
+        .ttm-doc-section h3 {
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--ttm-text);
+            margin-bottom: .9rem;
+        }
+
+        .ttm-doc-section h4 {
+            font-size: .92rem;
+            font-weight: 600;
+            color: var(--ttm-text);
+            margin: 1.25rem 0 .5rem;
+        }
+
+        .ttm-doc-section p,
+        .ttm-doc-section li {
+            color: var(--ttm-text);
+            line-height: 1.85;
+            font-size: .92rem;
+        }
+
+        .ttm-doc-p-muted {
+            color: var(--ttm-muted) !important;
+        }
+
+        .ttm-doc-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: .82rem;
+            background: #F5F3F0;
+            color: var(--ttm-text);
+            border: 1px solid var(--ttm-border);
+            border-radius: 6px;
+            padding: .1rem .4rem;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        html[data-theme="dark"] .ttm-doc-code {
+            background: #252525;
+        }
+
+        .ttm-doc-pre {
+            direction: ltr;
+            text-align: left;
+            font-size: .82rem;
+            background: #F5F3F0;
+            border: 1px solid var(--ttm-border);
+            border-radius: 8px;
+            padding: .9rem 1rem;
+            margin: .5rem 0 1rem;
+            overflow-x: auto;
+            color: var(--ttm-text);
+            white-space: pre;
+        }
+
+        .ttm-doc-pre {
+            color-scheme: light;
+        }
+
+        html[data-theme="dark"] .ttm-doc-pre {
+            background: #141414;
+            color-scheme: dark;
+        }
+
+        .ttm-doc-table {
+            font-size: .85rem;
+            color: var(--ttm-text);
+            --bs-table-color: var(--ttm-text);
+            --bs-table-bg: transparent;
+            --bs-table-border-color: var(--ttm-border);
+            border-color: var(--ttm-border);
+        }
+
+            .ttm-doc-table th {
+                font-weight: 600;
+                color: var(--ttm-muted);
+                font-size: .78rem;
+                border-bottom-color: var(--ttm-border);
+                white-space: nowrap;
+            }
+
+            .ttm-doc-table td {
+                border-color: var(--ttm-border);
+                vertical-align: middle;
+            }
+
+            .ttm-doc-table .ttm-group-row td {
+                background: #F9F5FF;
+                color: var(--ttm-primary);
+                font-weight: 600;
+                font-size: .8rem;
+            }
+
+        html[data-theme="dark"] .ttm-doc-table .ttm-group-row td {
+            background: #2D1B4E;
+            color: #A78BFA;
+        }
+
+        .ttm-method {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: .15rem .45rem;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 58px;
+            text-align: center;
+        }
+
+        .ttm-method-get {
+            background: #DCFCE7;
+            color: #166534;
+        }
+
+        .ttm-method-post {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .ttm-method-put {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .ttm-method-delete {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        html[data-theme="dark"] .ttm-method-get {
+            background: #14532D;
+            color: #BBF7D0;
+        }
+
+        html[data-theme="dark"] .ttm-method-post {
+            background: #1E3A8A;
+            color: #BFDBFE;
+        }
+
+        html[data-theme="dark"] .ttm-method-put {
+            background: #78350F;
+            color: #FDE68A;
+        }
+
+        html[data-theme="dark"] .ttm-method-delete {
+            background: #7F1D1D;
+            color: #FECACA;
+        }
+
+        .ttm-doc-note {
+            border-inline-start: 3px solid var(--ttm-primary);
+            background: rgba(91, 33, 182, .05);
+            border-radius: 0 8px 8px 0;
+            padding: .75rem 1rem;
+            font-size: .88rem;
+            margin: 1rem 0;
+            color: var(--ttm-text);
+        }
+
+            .ttm-doc-note.is-warning {
+                border-inline-start-color: var(--ttm-danger);
+                background: rgba(220, 38, 38, .05);
+            }
+
+        html[data-theme="dark"] .ttm-doc-note {
+            background: rgba(149, 101, 224, .1);
+        }
+
+            html[data-theme="dark"] .ttm-doc-note.is-warning {
+                background: rgba(248, 113, 113, .08);
+            }
+
+        .ttm-doc-steps {
+            counter-reset: step;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .ttm-doc-steps li {
+                counter-increment: step;
+                display: flex;
+                gap: .85rem;
+                padding: .8rem 0;
+                border-bottom: 1px solid var(--ttm-border);
+            }
+
+                .ttm-doc-steps li:last-child {
+                    border-bottom: none;
+                    padding-bottom: 0;
+                }
+
+                .ttm-doc-steps li::before {
+                    content: counter(step);
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 6px;
+                    background: var(--ttm-primary);
+                    color: #fff;
+                    font-size: .8rem;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+
+        .ttm-doc-qa {
+            padding: .9rem 0;
+            border-bottom: 1px solid var(--ttm-border);
+        }
+
+            .ttm-doc-qa:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .ttm-doc-qa h4 {
+                margin-top: 0;
+                font-size: .92rem;
+            }
+
+            .ttm-doc-qa p {
+                margin: 0;
+                font-size: .88rem;
+                color: var(--ttm-muted) !important;
+            }
+
+        .ttm-doc-link {
+            color: var(--ttm-primary);
+        }
+
+        .ttm-doc-footer {
+            border-top-color: var(--ttm-border) !important;
+        }
+
+        .ttm-doc-footer {
+            gap: .5rem;
+        }
+
+        @@media (max-width: 767px) {
+            .ttm-doc-footer {
+                gap: 1.25rem;
+                padding-bottom: 1.25rem;
+            }
+        }
+
+        .btn-primary {
+        background-color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: var(--ttm-primary-dark);
+            border-color: var(--ttm-primary-dark);
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+        }
+
+        .btn-primary i,
+        .btn-outline-primary i {
+            vertical-align: -1px;
+        }
+
+    html[data-theme="dark"] .btn-primary:hover,
+    html[data-theme="dark"] .btn-primary:focus {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .btn-outline-primary {
+        color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--ttm-primary);
+            border-color: var(--ttm-primary);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+        }
+
+    html[data-theme="dark"] .btn-outline-primary:hover {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+    </style>
+}
+
+<div class="row g-4 ttm-doc-layout">
+
+    @* ── Sidebar ── *@
+    <aside class="col-12 col-lg-3 ttm-doc-aside">
+        <nav class="ttm-doc-nav-wrap" aria-label="فهرست مستندات">
+            <div class="ttm-doc-nav">
+                <div class="ttm-doc-nav-audience">کاربران</div>
+                <a href="#users-start" class="ttm-doc-nav-link">شروع کار</a>
+                <a href="#users-concepts" class="ttm-doc-nav-link">مفاهیم و نقش‌ها</a>
+                <a href="#users-teams" class="ttm-doc-nav-link">تیم و دعوت</a>
+                <a href="#users-tasks" class="ttm-doc-nav-link">وظایف</a>
+                <a href="#users-faq" class="ttm-doc-nav-link">پرسش‌های متداول</a>
+
+                <div class="ttm-doc-nav-audience">توسعه‌دهندگان</div>
+                <a href="#dev-setup" class="ttm-doc-nav-link">اجرای محلی</a>
+                <a href="#dev-structure" class="ttm-doc-nav-link">سلوشن و معماری</a>
+                <a href="#dev-domain" class="ttm-doc-nav-link">مدل دامین</a>
+                <a href="#dev-auth" class="ttm-doc-nav-link">احراز هویت</a>
+                <a href="#dev-tests" class="ttm-doc-nav-link">تست‌ها</a>
+                <a href="#dev-api" class="ttm-doc-nav-link">مرجع API</a>
+
+                <div class="ttm-doc-nav-audience">بررسی فنی</div>
+                <a href="#tech-decisions" class="ttm-doc-nav-link">تصمیمات معماری</a>
+                <a href="#tech-invariants" class="ttm-doc-nav-link">قوانین و تغییر وضعیت‌ها</a>
+                <a href="#tech-patterns" class="ttm-doc-nav-link">الگوها و قراردادها</a>
+            </div>
+        </nav>
+    </aside>
+
+    <div class="col-12 col-lg-9">
+
+        @* ── Hero ── *@
+        <header class="ttm-doc-hero p-4 p-md-5 mb-4">
+            <div class="small mb-2" style="color: rgba(255,255,255,.75);">
+                <a href="/" style="color: rgba(255,255,255,.75);">خانه</a>
+                <span class="mx-1">/</span>
+                <span>مستندات</span>
+            </div>
+            <h1 class="h3 fw-bold mb-2">مستندات مدیریت وظایف تیم</h1>
+            <p class="mb-4" style="color: rgba(255,255,255,.85); line-height: 1.9;">
+                این صفحه برای سه گروه نوشته شده است: کاربران سامانه، توسعه‌دهندگانی که می‌خواهند پروژه را اجرا یا بررسی کنند،
+                و ارزیابان فنی که مایلند تصمیمات معماری را بشناسند.
+            </p>
+            <a href="@ctaHref" class="btn btn-sm px-3">
+                @ctaText
+            </a>
+        </header>
+
+        @* ── Audience entry points ── *@
+        <div class="row g-3 mb-2">
+            <div class="col-12 col-md-4">
+                <a href="#users" class="ttm-audience-card">
+                    <span class="ttm-audience-icon"><i class="bi bi-person"></i></span>
+                    <div class="fw-semibold mb-1">کاربران</div>
+                    <div class="small ttm-doc-p-muted">استفاده از سامانه، ساخت تیم، دعوت اعضا و پیگیری وظایف</div>
+                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <a href="#developers" class="ttm-audience-card">
+                    <span class="ttm-audience-icon"><i class="bi bi-code-slash"></i></span>
+                    <div class="fw-semibold mb-1">توسعه‌دهندگان</div>
+                    <div class="small ttm-doc-p-muted">اجرای محلی، ساختار سلوشن، مدل دامین و مرجع API</div>
+                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <a href="#technical" class="ttm-audience-card">
+                    <span class="ttm-audience-icon"><i class="bi bi-diagram-3"></i></span>
+                    <div class="fw-semibold mb-1">بررسی فنی</div>
+                    <div class="small ttm-doc-p-muted">تصمیمات معماری، قواعد کسب‌وکار و محدودیت‌های فعلی</div>
+                </a>
+            </div>
+        </div>
+
+        <article>
+
+            @* ════════════════ کاربران ════════════════ *@
+            <div class="ttm-doc-part mt-4" id="users">
+                <span class="ttm-doc-part-label">بخش ۱</span>
+                <h2>راهنمای کاربران</h2>
+            </div>
+            <hr class="ttm-doc-part-rule" />
+
+            <section class="ttm-doc-section" id="users-start">
+                <h3>شروع کار</h3>
+                <p>سامانه مدیریت وظایف تیم برای گروه‌هایی طراحی شده که می‌خواهند کارهای مشترک را در یک جا ثبت کنند، میان اعضا تقسیم کنند و وضعیت هر وظیفه را تا پایان دنبال کنند. برای استفاده از نسخه وب نیازی به نصب نرم‌افزار نیست.</p>
+
+                <ol class="ttm-doc-steps mt-3">
+                    <li>
+                        <div>
+                            <strong>ثبت‌نام یا ورود</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">با ایمیل خود حساب بسازید یا وارد شوید. <a class="ttm-doc-link" href="/SignIn">صفحه ورود</a></p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>ساخت تیم</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">نام و توضیحات تیم را وارد کنید و عنوان نقش خود را مشخص کنید. شما به‌عنوان مالک تیم ثبت می‌شوید. <a class="ttm-doc-link" href="/Teams">تیم‌های من</a></p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>دعوت اعضا</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">از صفحه جزئیات تیم، کاربران را با ایمیل یا شناسه دعوت کنید. <a class="ttm-doc-link" href="/Invites">دعوت‌ها</a></p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>ایجاد وظیفه و پیگیری</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">برای یک عضو وظیفه بسازید، در صورت نیاز مهلت تعیین کنید و وضعیت آن را دنبال کنید. <a class="ttm-doc-link" href="/Tasks">وظایف</a></p>
+                        </div>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="ttm-doc-section" id="users-concepts">
+                <h3>مفاهیم و نقش‌ها</h3>
+                <p>هر عضو تیم یک <strong>سطح دسترسی</strong> دارد که مشخص می‌کند چه کارهایی می‌تواند انجام دهد. <strong>عنوان نقش</strong> (مثلاً توسعه‌دهنده فرانت‌اند یا مدیر پروژه) جداست و آزادانه توسط مالک یا سرپرست تعیین می‌شود.</p>
+
+                <div class="table-responsive mt-3">
+                    <table class="table ttm-doc-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>عملیات</th>
+                                <th class="text-center">مالک</th>
+                                <th class="text-center">سرپرست</th>
+                                <th class="text-center">کارمند</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>ویرایش اطلاعات تیم</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center text-muted">—</td><td class="text-center text-muted">—</td></tr>
+                            <tr><td>ارسال دعوتنامه</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center text-muted">—</td></tr>
+                            <tr><td>تغییر نقش و سطح دسترسی اعضا</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center text-muted">—</td><td class="text-center text-muted">—</td></tr>
+                            <tr><td>حذف عضو</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center text-muted">—</td><td class="text-center text-muted">—</td></tr>
+                            <tr><td>لغو دعوتنامه</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center text-muted">—</td></tr>
+                            <tr><td>ایجاد وظیفه</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td></tr>
+                            <tr><td>انجام وظایف محول‌شده</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td></tr>
+                            <tr><td>ترک تیم</td><td class="text-center text-muted">—</td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td><td class="text-center"><i class="bi bi-check-lg text-primary"></i></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="small mt-3 mb-0">
+                    <li>سرپرست فقط می‌تواند دعوتنامه با نقش «کارمند» بفرستد.</li>
+                    <li>سرپرست فقط دعوتنامه‌هایی را که خودش فرستاده لغو می‌کند؛ مالک هر دعوتنامه‌ای را می‌تواند لغو کند.</li>
+                    <li>کارمند فقط می‌تواند برای خودش وظیفه بسازد. هیچ‌کس نمی‌تواند برای مالک تیم وظیفه بسازد.</li>
+                    <li>مالک تیم نمی‌تواند تیم را ترک کند.</li>
+                </ul>
+            </section>
+
+            <section class="ttm-doc-section" id="users-teams">
+                <h3>تیم و دعوت</h3>
+
+                <h4>ارسال دعوتنامه</h4>
+                <p>از صفحه جزئیات تیم، دکمه «دعوتنامه» را بزنید. شناسه یا ایمیل کاربر، سطح دسترسی و عنوان نقش را وارد کنید. کاربری که هم‌اکنون عضو فعال تیم است یا پیش‌تر دعوتنامه باز دارد، دعوتنامه تازه نمی‌گیرد. دعوتنامه تا زمان پاسخ کاربر در وضعیت «ارسال‌شده» می‌ماند.</p>
+
+                <h4>پذیرش یا رد دعوت</h4>
+                <p>دعوتنامه‌های دریافتی در بخش <a class="ttm-doc-link" href="/Invites">دعوت‌ها</a> نمایش داده می‌شوند. با پذیرش، عضو تیم می‌شوید و سطح دسترسی و عنوان نقش پیشنهادی برای شما ثبت می‌شود. اگر چند دعوتنامه از یک تیم داشته باشید و یکی را بپذیرید، بقیه به‌صورت خودکار لغو می‌شوند.</p>
+
+                <h4>لغو دعوتنامه</h4>
+                <p>فرستنده دعوتنامه یا مالک تیم می‌تواند دعوتنامه‌ای را که هنوز پاسخ داده نشده لغو کند.</p>
+
+                <h4>ترک تیم و حذف عضو</h4>
+                <p>هر عضوی به جز مالک می‌تواند از صفحه تیم خارج شود. فقط مالک می‌تواند عضو را از تیم حذف کند. عضو خارج‌شده یا حذف‌شده با دعوتنامه تازه می‌تواند دوباره به تیم بپیوندد.</p>
+                <div class="ttm-doc-note is-warning">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    حذف عضو قابل بازگشت نیست. برای بازگرداندن او باید دعوتنامه تازه ارسال شود.
+                </div>
+            </section>
+
+            <section class="ttm-doc-section" id="users-tasks">
+                <h3>چرخه وظیفه</h3>
+                <p>هر وظیفه دو طرف دارد: <strong>محول‌کننده</strong> یا به عبارت دیگر <strong>مدیر وظیفه</strong> که آن را تعریف می‌کند و نتیجه را بررسی می‌کند، و <strong>مسئول</strong> که کار را انجام می‌دهد. وضعیت فعلی همیشه در صفحه جزئیات وظیفه نمایش داده می‌شود.</p>
+
+                <ol class="ttm-doc-steps mt-3">
+                    <li>
+                        <div>
+                            <strong>ایجاد</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">سرپرست یا مالک، وظیفه را برای یک عضو یا برای خود می‌سازد. مهلت (ددلاین) اختیاری است و اگر تعیین شود باید در آینده باشد. وظیفه تا زمان واکنش مسئول در وضعیت «در انتظار» است.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>شروع</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">مسئول با آغاز کار(دکمه شروع در صفحه جزئیات وظیفه)، وضعیت را به «در حال انجام» تغییر می‌دهد.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>اعلام نتیجه</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">پس از پایان کار، مسئول موفقیت یا شکست وظیفه را اعلام می‌کند.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>بستن یا تلاش مجدد</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">محول‌کننده نتیجه را بررسی می‌کند. وظیفه را می‌بندد، یا در صورت شکست دستور تلاش مجدد می‌دهد. مسئول می‌تواند دستور را بپذیرد و دوباره کار را انجام دهد، یا آن را رد کند. پس از رد دستور، مالک یا مدیروظیفه می توانند عضو دیگری را مسئول آن وظیفه کنند یا پرونده آن وظیفه را بعنوان شکست خورده ببندند.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>تغییر مسئول</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">محول‌کننده یا مالک می‌تواند وظیفه باز را به عضو دیگری بسپارد. در این حالت وضعیت وظیفه دوباره «در انتظار» می‌شود و مسئول جدید باید آن را شروع کند.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <strong>شکست در ددلاین</strong>
+                            <p class="small mb-0 mt-1 ttm-doc-p-muted">اگر ددلاین بگذرد و وظیفه هنوز بسته نشده باشد، سامانه آن را به‌صورت خودکار با شکست در ددلاین می‌بندد.</p>
+                        </div>
+                    </li>
+                </ol>
+
+                <div class="mt-4">
+                    <a href="/Tasks" class="btn btn-outline-primary btn-sm btn-ttm">
+                        <i class="bi bi-check2-square"></i> مشاهده وظایف
+                    </a>
+                </div>
+            </section>
+
+            <section class="ttm-doc-section" id="users-faq">
+                <h3>پرسش‌های متداول</h3>
+
+                <div class="ttm-doc-qa">
+                    <h4>چطور عضو جدید اضافه کنم؟</h4>
+                    <p>از صفحه جزئیات تیم، دعوتنامه را ارسال کنید. پس از پذیرش کاربر، او عضو تیم می‌شود.</p>
+                </div>
+                <div class="ttm-doc-qa">
+                    <h4>اگر مالک تیم باشم، می‌توانم آن را ترک کنم؟</h4>
+                    <p>خیر. مالک نمی‌تواند تیم خود را ترک کند.</p>
+                </div>
+                <div class="ttm-doc-qa">
+                    <h4>ددلاین چه معنایی دارد؟</h4>
+                    <p>ددلاین مهلت پایان وظیفه است. اگر تا آن زمان وظیفه بسته نشده باشد، سامانه آن را با شکست در ددلاین می‌بندد.</p>
+                </div>
+                <div class="ttm-doc-qa">
+                    <h4>دعوتنامه را اشتباهی رد کردم، چه کنم؟</h4>
+                    <p>از مالک یا سرپرستی که دعوت را فرستاده بخواهید دعوت تازه‌ای ارسال کند.</p>
+                </div>
+                <div class="ttm-doc-qa">
+                    <h4>شناسه تیم را کجا پیدا کنم؟</h4>
+                    <p>در صفحه جزئیات تیم، دکمه «شناسه تیم» را بزنید تا در کلیپ‌بورد کپی شود.</p>
+                </div>
+            </section>
+
+            @* ════════════════ توسعه‌دهندگان ════════════════ *@
+            <div class="ttm-doc-part mt-5" id="developers">
+                <span class="ttm-doc-part-label">بخش ۲</span>
+                <h2>راهنمای توسعه‌دهندگان</h2>
+            </div>
+            <hr class="ttm-doc-part-rule" />
+
+            <section class="ttm-doc-section" id="dev-setup">
+                <h3>اجرای محلی</h3>
+                <p>پیش‌نیاز: <span class="ttm-doc-code">.NET 8 SDK</span> و یک نمونه SQL Server یا پایگاه داده سازگار با تنظیمات پروژه.</p>
+
+                <div class="ttm-doc-pre">
+                    git clone https://github.com/ofc-parviz/ttm
+                    cd ttm
+                    dotnet restore
+                    dotnet build
+                    dotnet run --project Front/TeamTaskManagement.Web
+                    dotnet test
+                </div>
+
+                <p>رشته اتصال به پایگاه داده و تنظیمات JWT را در <span class="ttm-doc-code">appsettings.Development.json</span> یا User Secrets قرار دهید و آن‌ها را در مخزن کامیت نکنید.</p>
+
+                <div class="ttm-doc-note">
+                    <i class="bi bi-info-circle me-1"></i>
+                    پیش از اجرا، مایگریشن‌های پایگاه داده را اعمال کنید:
+                    <span class="ttm-doc-code">dotnet ef database update --project TeamTaskManagement.Persistence --startup-project Front/TeamTaskManagement.Web</span>
+                </div>
+            </section>
+
+            <section class="ttm-doc-section" id="dev-structure">
+                <h3>سلوشن و معماری</h3>
+                <p>سلوشن از ۸ پروژه تشکیل شده و هر پروژه بر اساس مسئولیت جدا شده است. Clean Architecture با قانون وابستگی یک‌طرفه: لایه‌های داخلی به هیچ لایه بیرونی وابسته نیستند.</p>
+
+                <div class="ttm-doc-pre">
+                    TeamTaskManagement.sln
+                    ├─ Front/
+                    │  └─ TeamTaskManagement.Web            MVC · Razor · Web API · Cookie · JWT
+                    ├─ Shared/
+                    │  └─ TeamTaskManagement.Shared         Result&lt;T&gt; و قراردادهای مشترک
+                    ├─ TeamTaskManagement.Application       Commands · Queries · Behaviors · Validators
+                    ├─ TeamTaskManagement.Domain            Aggregates · Entities · ValueObjects · Enums · Errors · Events · Specifications
+                    │  └─ Shared/                           نوع‌های کمکی مخصوص دامین
+                    ├─ TeamTaskManagement.Infrastructure    سرویس‌های خارجی: هش رمز، احراز هویت، ایمیل
+                    ├─ TeamTaskManagement.Persistence       EF Core · Configurations · Repositories · QuerySpecifications · انتشار رویدادهای دامین
+                    └─ Tests/
+                    ├─ TeamTaskManagement.Domain.Tests       تست‌های واحد دامین
+                    └─ TeamTaskManagement.IntegrationTests   تست‌های API و پایگاه داده
+                </div>
+
+                <h4>مسئولیت هر پروژه</h4>
+                <div class="table-responsive mt-2">
+                    <table class="table ttm-doc-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>پروژه</th>
+                                <th>مسئولیت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="ttm-doc-code">Web</span></td>
+                                <td>صفحات Razor، Web API با JSON، احراز هویت با Cookie و JWT، و ثبت وابستگی‌ها (Composition Root).</td>
+                            </tr>
+                            <tr>
+                                <td><span class="ttm-doc-code">Application</span></td>
+                                <td>قابلیت‌ها به‌صورت Command و Query با MediatR، مدل‌های Response، Pipeline Behaviors و اعتبارسنجی با FluentValidation. هر قابلیت در پوشه خودش است، مانند <span class="ttm-doc-code">Teams/Queries/GetMyTeams</span>.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="ttm-doc-code">Domain</span></td>
+                                <td>اگریگیت‌ها (Team، TeamTask، User)، موجودیت‌ها، Value Object ها، Enum های وضعیت، خطاهای دامین، رویدادها، Specification ها و اینترفیس‌های Repository. فقط به Shared وابسته است.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="ttm-doc-code">Shared</span> (پروژه)</td>
+                                <td>نوع نتیجه <span class="ttm-doc-code">Result&lt;T&gt;</span> و قراردادهای مشترک میان لایه‌ها.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="ttm-doc-code">Infrastructure</span></td>
+                                <td>سرویس‌های خارجی مانند هش کردن رمز عبور، صدور توکن JWT، احراز هویت و ارسال ایمیل.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="ttm-doc-code">Persistence</span></td>
+                                <td>EF Core و پیکربندی Entity ها، پیاده‌سازی Repository ها، ارائه QuerySpecification بر پایه Specification های دامین، و منتشر کردن رویدادهای دامین.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>قانون وابستگی</h4>
+                <ul class="mb-0">
+                    <li><span class="ttm-doc-code">Web</span> به Application و، برای ثبت سرویس‌ها، به Infrastructure و Persistence وابسته است.</li>
+                    <li><span class="ttm-doc-code">Application</span> به Domain و Shared وابسته است.</li>
+                    <li><span class="ttm-doc-code">Infrastructure</span> و <span class="ttm-doc-code">Persistence</span> به Domain و Application وابسته‌اند.</li>
+                    <li><span class="ttm-doc-code">Domain</span> فقط به Shared وابسته است و هیچ وابستگی به ASP.NET، EF Core یا MediatR ندارد.</li>
+                </ul>
+            </section>
+
+            <section class="ttm-doc-section" id="dev-domain">
+                <h3>مدل دامین</h3>
+                <p>سه اگریگیت ریشه در دامین وجود دارد: <span class="ttm-doc-code">Team</span>، <span class="ttm-doc-code">User</span> و <span class="ttm-doc-code">TeamTask</span>. ارجاع بین آن‌ها فقط با شناسه (<span class="ttm-doc-code">Guid</span>) انجام می‌شود.</p>
+
+                <h4>اگریگیت Team</h4>
+                <p>
+                    <span class="ttm-doc-code">TeamMember</span> و <span class="ttm-doc-code">TeamInvite</span> موجودیت‌های فرزند داخل مرز تیم هستند. ساخت تیم، مالک را هم‌زمان به‌عنوان عضو اول ثبت می‌کند. متدهای عمومی تیم شامل
+                    <span class="ttm-doc-code">UpdateDetails</span>، <span class="ttm-doc-code">SendInvite</span>، <span class="ttm-doc-code">AcceptInvite</span>، <span class="ttm-doc-code">RejectInvite</span>، <span class="ttm-doc-code">CancelInvite</span>، <span class="ttm-doc-code">RemoveMember</span>، <span class="ttm-doc-code">LeaveTeam</span> و <span class="ttm-doc-code">ChangeMemberRole</span> هستند.
+                    سازنده‌ها و متدهای تغییر وضعیت فرزندان <span class="ttm-doc-code">internal</span> هستند و فقط از داخل تیم فراخوانی می‌شوند.
+                </p>
+
+                <h4>اگریگیت TeamTask</h4>
+                <p>
+                    وظیفه اگریگیت جداگانه‌ای است تا چرخه عمر وظیفه از تغییرات عضویت تیم جدا بماند. متدهای آن شامل
+                    <span class="ttm-doc-code">Create</span>، <span class="ttm-doc-code">UpdateDetails</span>، <span class="ttm-doc-code">UpdateDeadline</span>، <span class="ttm-doc-code">RotateCreator</span>، <span class="ttm-doc-code">RotateAssignee</span>، <span class="ttm-doc-code">Start</span>، <span class="ttm-doc-code">ClaimComplete</span>، <span class="ttm-doc-code">ClaimFailure</span>، <span class="ttm-doc-code">OrderRetry</span>، <span class="ttm-doc-code">AcceptRetry</span>، <span class="ttm-doc-code">RejectRetry</span>، <span class="ttm-doc-code">CloseAsComplete</span>، <span class="ttm-doc-code">CloseAsFailure</span> و <span class="ttm-doc-code">CloseAsDeadlineFailure</span> است.
+                    مجوز هر عملیات بر اساس <span class="ttm-doc-code">ActingMember</span> (شناسه و سطح دسترسی عضو درخواست‌کننده) تصمیم گرفته می‌شود.
+                </p>
+
+                <h4>اگریگیت User</h4>
+                <p>
+                    کاربر اگریگیت مستقلی است و با <span class="ttm-doc-code">UserId</span> به عضو تیم ارجاع داده می‌شود. ساخت کاربر رویداد <span class="ttm-doc-code">UserRegisteredEvent</span> را منتشر می‌کند.
+                </p>
+
+                <h4>مقادیر و وضعیت‌ها</h4>
+                <div class="table-responsive mt-3">
+                    <table class="table ttm-doc-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>نوع</th>
+                                <th>نمونه‌ها</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Value Object</td>
+                                <td><span class="ttm-doc-code">DisplayName</span>، <span class="ttm-doc-code">TeamDescription</span>، <span class="ttm-doc-code">TaskTitle</span>، <span class="ttm-doc-code">TaskDescription</span>، <span class="ttm-doc-code">UserEmail</span>، <span class="ttm-doc-code">Password</span>، <span class="ttm-doc-code">FirstName</span>، <span class="ttm-doc-code">LastName</span></td>
+                            </tr>
+                            <tr>
+                                <td>سطح دسترسی</td>
+                                <td><span class="ttm-doc-code">TeamMemberRole</span>: Leader، Manager، Member</td>
+                            </tr>
+                            <tr>
+                                <td>وضعیت عضویت</td>
+                                <td><span class="ttm-doc-code">TeamMemberStatus</span>: Active، Leaved، Removed</td>
+                            </tr>
+                            <tr>
+                                <td>وضعیت دعوتنامه</td>
+                                <td><span class="ttm-doc-code">TeamInviteStatus</span>: Sent، Accepted، Rejected، Cancelled، AutoCancelled</td>
+                            </tr>
+                            <tr>
+                                <td>وضعیت وظیفه</td>
+                                <td><span class="ttm-doc-code">TeamTaskStatus</span>: ده وضعیت از Pending تا ClosedAsComplete (جدول در بخش بررسی فنی)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="ttm-doc-section" id="dev-auth">
+                <h3>احراز هویت</h3>
+                <p>سامانه دو کانال احراز هویت دارد که هسته آن یکی است:</p>
+                <ul>
+                    <li><strong>رابط وب (MVC):</strong> پس از ورود، هویت کاربر در Cookie نگهداری می‌شود و مرورگر آن را در هر درخواست ارسال می‌کند.</li>
+                    <li><strong>رابط برنامه‌نویسی (API):</strong> ورود از <span class="ttm-doc-code">POST /api/auth/login</span> انجام می‌شود و <span class="ttm-doc-code">accessToken</span> برمی‌گرداند. درخواست‌های محافظت‌شده باید این هدر را داشته باشند:</li>
+                </ul>
+
+                <div class="ttm-doc-pre">Authorization: Bearer &lt;accessToken&gt;</div>
+                <p class="mb-0">هش کردن رمز عبور، صدور توکن JWT و سرویس‌های مرتبط با احراز هویت در لایه Infrastructure قرار دارند. دسترسی کاربر به تیم و وظیفه در لایه دامین و با سطح دسترسی عضو بررسی می‌شود. دکمه‌ها و منوهای رابط کاربری فقط برای راحتی کاربر هستند.</p>
+            </section>
+
+            <section class="ttm-doc-section" id="dev-tests">
+                <h3>تست‌ها</h3>
+                <p>تست‌ها در دو پروژه جدا قرار دارند:</p>
+                <ul>
+                    <li><span class="ttm-doc-code">Domain.Tests</span>: تست واحد قواعد کسب‌وکار، انتقال وضعیت وظیفه و جریان دعوتنامه. این تست‌ها بدون پایگاه داده اجرا می‌شوند.</li>
+                    <li><span class="ttm-doc-code">IntegrationTests</span>: جریان کامل API و تعامل با پایگاه داده. پیش از اجرا تنظیمات اتصال به پایگاه داده آزمایشی را بررسی کنید.</li>
+                </ul>
+                <div class="ttm-doc-pre">dotnet test</div>
+            </section>
+
+            <section class="ttm-doc-section" id="dev-api">
+                <h3>مرجع API</h3>
+                <p>تمام پاسخ‌ها JSON هستند. در خطاها، فیلد <span class="ttm-doc-code">code</span> برای برنامه و <span class="ttm-doc-code">fa_message</span> برای نمایش فارسی به کاربر در نظر گرفته شده است.</p>
+
+                <div class="table-responsive mt-3">
+                    <table class="table ttm-doc-table mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 110px;">متد</th>
+                                <th>مسیر</th>
+                                <th>هدف</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="ttm-group-row"><td colspan="3">احراز هویت</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/auth/register</span></td><td>ثبت‌نام</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/auth/login</span></td><td>ورود و دریافت توکن</td></tr>
+
+                            <tr class="ttm-group-row"><td colspan="3">پروفایل</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-get">GET</span></td><td><span class="ttm-doc-code">/api/profile</span></td><td>مشاهده پروفایل</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/profile</span></td><td>ویرایش پروفایل</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/profile/new-password</span></td><td>تغییر رمز عبور</td></tr>
+
+                            <tr class="ttm-group-row"><td colspan="3">تیم‌ها</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-get">GET</span></td><td><span class="ttm-doc-code">/api/teams</span></td><td>فهرست تیم‌های کاربر</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-get">GET</span></td><td><span class="ttm-doc-code">/api/teams/{id}</span></td><td>جزئیات تیم</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/teams</span></td><td>ساخت تیم</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/teams</span></td><td>ویرایش تیم</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-delete">DELETE</span></td><td><span class="ttm-doc-code">/api/teams/{teamId}/leave</span></td><td>ترک تیم</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-delete">DELETE</span></td><td><span class="ttm-doc-code">/api/teams/{teamId}/members/{memberId}</span></td><td>حذف عضو</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/teams/{teamId}/members/{memberId}/role</span></td><td>تغییر نقش عضو</td></tr>
+
+                            <tr class="ttm-group-row"><td colspan="3">دعوتنامه‌ها</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-get">GET</span></td><td><span class="ttm-doc-code">/api/invites</span></td><td>فهرست دعوتنامه‌ها</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/invites</span></td><td>ارسال دعوتنامه</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-delete">DELETE</span></td><td><span class="ttm-doc-code">/api/invites</span></td><td>لغو دعوتنامه</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/invites/accept</span></td><td>پذیرش دعوتنامه</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/invites/reject</span></td><td>رد دعوتنامه</td></tr>
+
+                            <tr class="ttm-group-row"><td colspan="3">وظایف</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-get">GET</span></td><td><span class="ttm-doc-code">/api/tasks/for-me</span></td><td>وظایف مسئول‌شده برای کاربر</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-get">GET</span></td><td><span class="ttm-doc-code">/api/tasks/for-team</span></td><td>وظایف یک تیم</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-get">GET</span></td><td><span class="ttm-doc-code">/api/tasks/{id}</span></td><td>جزئیات وظیفه</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks</span></td><td>ایجاد وظیفه</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/tasks/details</span></td><td>ویرایش جزئیات</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/tasks/deadline</span></td><td>تغییر مهلت</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/tasks/assignee</span></td><td>تغییر مسئول</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-put">PUT</span></td><td><span class="ttm-doc-code">/api/tasks/creator</span></td><td>تغییر محول‌کننده</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/start</span></td><td>شروع انجام وظیفه</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/claim-complete</span></td><td>اعلام تکمیل</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/claim-failure</span></td><td>اعلام شکست</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/close-complete</span></td><td>بستن با تکمیل</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/close-failure</span></td><td>بستن با شکست</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/order-retry</span></td><td>دستور تلاش مجدد</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/accept-retry</span></td><td>پذیرش تلاش مجدد</td></tr>
+                            <tr><td><span class="ttm-method ttm-method-post">POST</span></td><td><span class="ttm-doc-code">/api/tasks/{taskId}/reject-retry</span></td><td>رد تلاش مجدد</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            @* ════════════════ بررسی فنی ════════════════ *@
+            <div class="ttm-doc-part mt-5" id="technical">
+                <span class="ttm-doc-part-label">بخش ۳</span>
+                <h2>بررسی فنی</h2>
+            </div>
+            <hr class="ttm-doc-part-rule" />
+
+            <section class="ttm-doc-section" id="tech-decisions">
+                <h3>تصمیمات معماری</h3>
+                <p>هر تصمیم کلیدی، دلیل و پیامد آن را کنار هم می‌بینید.</p>
+
+                <div class="table-responsive mt-3">
+                    <table class="table ttm-doc-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>تصمیم</th>
+                                <th>دلیل</th>
+                                <th>پیامد</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Clean Architecture با قانون وابستگی یک‌طرفه</td>
+                                <td>قواعد کسب‌وکار مستقل از فریم‌ورک، پایگاه داده و رابط کاربری تست‌پذیر باشند.</td>
+                                <td>تعداد پروژه‌ها بیشتر است و افزودن یک قابلیت ساده، چند لایه را لمس می‌کند.</td>
+                            </tr>
+                            <tr>
+                                <td>تفکیک مسئولیت Persistence و Infrastructure</td>
+                                <td>Persistence مسئول داده و الگوهای مرتبط است و Infrastructure مسئول سرویس‌های خارجی. هر دو به Domain و Application وابسته‌اند.</td>
+                                <td>مرز میان دو لایه با مسئولیت تعیین می‌شود، نه با وابستگی؛ بنابراین نگهداری آن‌ها باید با قرارداد روشن انجام شود.</td>
+                            </tr>
+                            <tr>
+                                <td>Specification در دامین و QuerySpecification در Persistence</td>
+                                <td>قواعد انتخاب داده یک بار در دامین تعریف شوند و کوئری‌های پایگاه داده بر پایه آن‌ها ساخته شوند.</td>
+                                <td>هر Specification جدید در دامین باید در Persistence هم پیاده‌سازی شود.</td>
+                            </tr>
+                            <tr>
+                                <td>انتشار رویدادهای دامین در Persistence</td>
+                                <td>دامین رویداد را ثبت می‌کند و انتشار آن به پرسیستنس سپرده می‌شود تا دامین از جزئیات انتشار بی‌اطلاع باشد.</td>
+                                <td>مسیر انتشار رویداد باید برای هر اگریگیت و هر تراکنش به‌درستی پیاده‌سازی و تست شود.</td>
+                            </tr>
+                            <tr>
+                                <td>CQRS با MediatR</td>
+                                <td>خواندن و نوشتن نیازهای متفاوتی دارند؛ هر کدام کلاس مستقل خود را دارند.</td>
+                                <td>برای هر عملیات یک کلاس جدا وجود دارد و ردیابی جریان داده کمی سخت‌تر است.</td>
+                            </tr>
+                            <tr>
+                                <td>Pipeline Behaviors برای رفتارهای مشترک</td>
+                                <td>اعتبارسنجی و مجوزدهی در همه Command و Query به‌صورت یکنواخت اجرا شوند.</td>
+                                <td>ترتیب Behaviors در ثبت سرویس‌ها اهمیت دارد.</td>
+                            </tr>
+                            <tr>
+                                <td>اعتبارسنجی ورودی با FluentValidation</td>
+                                <td>قواعد ورودی از کنترلرها جدا و قابل تست باشند.</td>
+                                <td>هر ورودی جدید باید Validator مخصوص خودش داشته باشد.</td>
+                            </tr>
+                            <tr>
+                                <td>تیم به‌عنوان اگریگیت ریشه با اعضا و دعوتنامه‌های فرزند</td>
+                                <td>قواعد یکتایی مالک، جلوگیری از دعوت دوباره کاربر فعال و لغو خودکار دعوت‌ها باید در یک مرز اجرا شوند.</td>
+                                <td>تیم شامل تاریخچه کامل اعضا (از جمله خارج‌شده‌ها) است و با رشد آن بارگذاری سنگین‌تر می‌شود. سقفی برای تعداد اعضا پیاده‌سازی نشده است.</td>
+                            </tr>
+                            <tr>
+                                <td>وظیفه اگریگیت جداگانه است</td>
+                                <td>چرخه عمر و حجم وظایف مستقل از عضویت تیم است و تغییر وظیفه نباید کل تیم را بارگذاری کند.</td>
+                                <td>بررسی عضویت فعال مسئول و محول‌کننده در زمان ایجاد یا تغییر وظیفه، در اگریگیت وظیفه انجام نمی‌شود و در لایه Application انجام می‌شود.</td>
+                            </tr>
+                            <tr>
+                                <td>ارجاع بین اگریگیت‌ها فقط با شناسه</td>
+                                <td>اگریگیت‌ها مستقل بمانند و وابستگی مستقیم بین User، Team و TeamTask ایجاد نشود.</td>
+                                <td>برای نمایش نام کاربران یا عناوین تیم باید خواندن جداگانه انجام شود.</td>
+                            </tr>
+                            <tr>
+                                <td>سازنده و تغییرات فرزندان <span class="ttm-doc-code">internal</span></td>
+                                <td>هیچ کدی بیرون از دامین نمی‌تواند وضعیت عضو یا دعوت را دور بزند.</td>
+                                <td>هر قابلیت جدید باید از متدهای تیم عبور کند.</td>
+                            </tr>
+                            <tr>
+                                <td>نتیجه <span class="ttm-doc-code">Result&lt;T&gt;</span> به‌جای استثنا برای خطاهای دامین</td>
+                                <td>خطاهای قابل پیش‌بینی بخشی از قرارداد هستند و نیاز به catch ندارند.</td>
+                                <td>هر خطای جدید باید در <span class="ttm-doc-code">DomainErrors</span> تعریف شود.</td>
+                            </tr>
+                            <tr>
+                                <td>وضعیت‌های <span class="ttm-doc-code">Leaved</span> و <span class="ttm-doc-code">Removed</span> به‌جای حذف فیزیکی</td>
+                                <td>تاریخچه عضویت برای گزارش و ممیزی حفظ شود.</td>
+                                <td>کوئری‌های عضویت باید همیشه فیلتر وضعیت فعال را لحاظ کنند.</td>
+                            </tr>
+                            <tr>
+                                <td>سطح دسترسی به‌صورت Enum و عنوان نقش به‌صورت Value Object</td>
+                                <td>قواعد دسترسی ثابت و قابل بررسی باشند، در حالی که عنوان نقش آزاد است.</td>
+                                <td>تغییر سطح دسترسی باید از متد <span class="ttm-doc-code">ChangeRole</span> انجام شود تا عنوان هم‌زمان به‌روز شود.</td>
+                            </tr>
+                            <tr>
+                                <td>مجوز عملیات وظیفه با <span class="ttm-doc-code">ActingMember</span></td>
+                                <td>شناسه و سطح دسترسی عضو درخواست‌کننده به‌صورت یک مقدار همراه عملیات منتقل شود.</td>
+                                <td>صحت مجوز به این وابسته است که لایه بالاتر، نقش واقعی عضو را از پایگاه داده بارگذاری کرده باشد.</td>
+                            </tr>
+                            <tr>
+                                <td>احراز هویت دوکاناله با Cookie و JWT</td>
+                                <td>صفحات وب با Cookie و کلاینت‌های API با توکن کار کنند، ولی هر دو به یک هسته احراز هویت وصل شوند.</td>
+                                <td>مدیریت انقضا و ابطال توکن باید جداگانه طراحی شود.</td>
+                            </tr>
+                            <tr>
+                                <td>پیام‌های خطا به فارسی از سرور</td>
+                                <td>یک منبع حقیقت برای متن خطا، بدون ترجمه پراکنده در کلاینت.</td>
+                                <td>هر پیام جدید باید در سرور تعریف شود.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="ttm-doc-section" id="tech-invariants">
+                <h3>قوانین و تغییر وضعیت‌ها</h3>
+
+                <h4>قوانین تیم و دعوت</h4>
+                <ul class="mb-0">
+                    <li>تیم همیشه یک مالک دارد. مالک فقط هنگام ساخت تیم تعیین می‌شود و نه از طریق دعوت و نه از طریق تغییر نقش قابل واگذاری یا تنزل نیست.</li>
+                    <li>کاربری که عضو فعال است دعوتنامه جدید نمی‌گیرد و برای هر کاربر در هر تیم حداکثر یک دعوتنامه «ارسال‌شده» وجود دارد.</li>
+                    <li>دعوتنامه با نقش مالک ساخته نمی‌شود. سرپرست فقط دعوتنامه با نقش کارمند می‌فرستد.</li>
+                    <li>پذیرش یک دعوتنامه، سایر دعوتنامه‌های باز همان کاربر در همان تیم را به «لغو خودکار» می‌برد.</li>
+                    <li>دعوتنامه‌ای که پذیرش آن را کاربری که هم‌اکنون عضو فعال است انجام دهد، لغو خودکار می‌شود.</li>
+                    <li>دعوتنامه از وضعیت «ارسال‌شده» فقط به پذیرفته، رد شده، لغو شده یا لغو خودکار تغییر می‌کند.</li>
+                    <li>ترک تیم و حذف عضو، وضعیت عضو را به «خارج‌شده» یا «حذف‌شده» می‌برد؛ رکورد عضو حذف نمی‌شود.</li>
+                </ul>
+
+                <h4>قوانین وظیفه</h4>
+                <ul class="mb-0">
+                    <li>وظیفه با ددلاین گذشته ساخته یا ویرایش نمی‌شود. ددلاین اختیاری است.</li>
+                    <li>کارمند فقط می‌تواند برای خودش وظیفه بسازد و هیچ‌کس نمی‌تواند برای مالک وظیفه بسازد.</li>
+                    <li>وظیفه‌ای که بسته شده، جزئیات، ددلاین، محول‌کننده و مسئول آن قابل تغییر نیست.</li>
+                    <li>وظیفه نمی‌تواند به همان محول‌کننده یا همان مسئول فعلی منتقل شود.</li>
+                    <li>تغییر مسئول، وضعیت وظیفه را به «در انتظار» برمی‌گرداند.</li>
+                    <li>ویرایش جزئیات و تغییر ددلاین فقط توسط محول‌کننده یا مالک انجام می‌شود؛ کارمند محول‌کننده فقط اگر مسئول همان وظیفه باشد می‌تواند آن را ویرایش کند.</li>
+                </ul>
+
+                <h4>انتقال وضعیت وظیفه</h4>
+                <p class="mb-3">هر انتقال فقط از مسیر تعریف‌شده امکان‌پذیر است. ستون «چه کسی» نقشی است که متد را فراخوانی می‌کند.</p>
+
+                <div class="table-responsive">
+                    <table class="table ttm-doc-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>از وضعیت</th>
+                                <th>به وضعیت</th>
+                                <th>متد</th>
+                                <th>چه کسی</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="ttm-doc-code">Pending</span></td><td><span class="ttm-doc-code">OnGoing</span></td><td><span class="ttm-doc-code">Start</span></td><td>مسئول</td></tr>
+                            <tr><td><span class="ttm-doc-code">OnGoing</span>، <span class="ttm-doc-code">AcceptedToTryAgain</span></td><td><span class="ttm-doc-code">ClaimedAsComplete</span></td><td><span class="ttm-doc-code">ClaimComplete</span></td><td>مسئول</td></tr>
+                            <tr><td><span class="ttm-doc-code">OnGoing</span>، <span class="ttm-doc-code">AcceptedToTryAgain</span></td><td><span class="ttm-doc-code">ClaimedAsFailure</span></td><td><span class="ttm-doc-code">ClaimFailure</span></td><td>مسئول</td></tr>
+                            <tr><td><span class="ttm-doc-code">ClaimedAsComplete</span>، <span class="ttm-doc-code">ClaimedAsFailure</span></td><td><span class="ttm-doc-code">OrderedToTryAgain</span></td><td><span class="ttm-doc-code">OrderRetry</span></td><td>محول‌کننده یا مالک</td></tr>
+                            <tr><td><span class="ttm-doc-code">OrderedToTryAgain</span></td><td><span class="ttm-doc-code">AcceptedToTryAgain</span></td><td><span class="ttm-doc-code">AcceptRetry</span></td><td>مسئول</td></tr>
+                            <tr><td><span class="ttm-doc-code">OrderedToTryAgain</span></td><td><span class="ttm-doc-code">RejectedToTryAgain</span></td><td><span class="ttm-doc-code">RejectRetry</span></td><td>مسئول</td></tr>
+                            <tr><td><span class="ttm-doc-code">ClaimedAsComplete</span>، <span class="ttm-doc-code">AcceptedToTryAgain</span></td><td><span class="ttm-doc-code">ClosedAsComplete</span></td><td><span class="ttm-doc-code">CloseAsComplete</span></td><td>محول‌کننده یا مالک</td></tr>
+                            <tr><td><span class="ttm-doc-code">ClaimedAsFailure</span>، <span class="ttm-doc-code">RejectedToTryAgain</span></td><td><span class="ttm-doc-code">ClosedAsFailure</span></td><td><span class="ttm-doc-code">CloseAsFailure</span></td><td>محول‌کننده یا مالک</td></tr>
+                            <tr><td>هر وضعیت باز</td><td><span class="ttm-doc-code">ClosedAsDeadlineFailure</span></td><td><span class="ttm-doc-code">CloseAsDeadlineFailure</span></td><td>فرایند زمان‌بندی‌شده</td></tr>
+                            <tr><td>هر وضعیت باز</td><td><span class="ttm-doc-code">Pending</span></td><td><span class="ttm-doc-code">RotateAssignee</span></td><td>محول‌کننده یا مالک</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="ttm-doc-section" id="tech-patterns">
+                <h3>الگوها و قراردادها</h3>
+
+                <h4>قرارداد خطا</h4>
+                <p>هر خطای API شامل <span class="ttm-doc-code">code</span>، <span class="ttm-doc-code">message</span> و <span class="ttm-doc-code">fa_message</span> است. رابط کاربری در صورت وجود، <span class="ttm-doc-code">fa_message</span> را نمایش می‌دهد.</p>
+
+                <h4>مسیر هر درخواست</h4>
+                <p>هر درخواست از Controller به یک Command یا Query از طریق MediatR می‌رسد. پیش از رسیدن به Handler مربوطه، Pipeline Behaviors اعتبارسنجی و بررسی‌های مشترک را اجرا می‌کنند. Handler منطق کاربرد را هماهنگ می‌کند و قواعد کسب‌وکار در اگریگیت‌های دامین باقی می‌مانند.</p>
+
+                <h4>Specification و QuerySpecification</h4>
+                <p>قواعد انتخاب داده در دامین به‌صورت Specification تعریف می‌شوند. در لایه Persistence، همه ی QuerySpecification ها بر پایه همین Specification ها ساخته می‌شوند و کوئری پایگاه داده را تولید می‌کنند. بدین ترتیب قاعده انتخاب داده یک بار تعریف می‌شود.</p>
+
+                <h4>رویدادهای دامین</h4>
+                <p>اگریگیت‌ها هنگام تغییر وضعیت، رویداد دامین ثبت می‌کنند. انتشار این رویدادها بر عهده لایه Persistence است.</p>
+
+                <h4>دسترسی چندلایه</h4>
+                <p>رابط کاربری دکمه‌ها را بر اساس سطح دسترسی نشان می‌دهد، اما تصمیم نهایی در دامین گرفته می‌شود. هیچ‌یک از نمایش‌های UI امنیت را تضمین نمی‌کند.</p>
+
+                <h4>رابط کاربری</h4>
+                <p>صفحات با Razor و Bootstrap 5 ساخته شده‌اند. جاوااسکریپت فقط برای کارهایی به کار می‌رود که نیاز به رفتار مرورگری دارند، مانند نمایش مودال، کپی شناسه و هایلایت فهرست کناری. نسخه موبایل با ناوبری پایین صفحه ارائه شده و قابلیت نصب به‌عنوان اپلیکیشن وب (PWA) در حال آماده‌سازی است.</p>
+
+                <h4>تم</h4>
+                <p>رنگ‌ها از متغیرهای <span class="ttm-doc-code">--ttm-*</span> می‌آیند و تم تیره با تغییر این متغیرها ساخته می‌شود.</p>
+            </section>
+
+        </article>
+
+        <footer class="d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small mt-5 pt-4 border-top ttm-doc-footer">
+            <span>
+                این پروژه متن‌باز است و کد آن در
+                <a class="ttm-doc-link" href="@repoUrl" target="_blank" rel="noopener noreferrer">گیت‌هاب</a>
+                در دسترس است.
+            </span>
+            <a href="/" class="text-decoration-none" style="color: var(--ttm-primary);">
+                <i class="bi bi-house"></i> بازگشت به صفحه اصلی
+            </a>
+        </footer>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var links = document.querySelectorAll('.ttm-doc-nav-link');
+            if (!links.length || !('IntersectionObserver' in window)) return;
+
+            var map = {};
+            links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (!e.isIntersecting) return;
+                    links.forEach(function (l) { l.classList.remove('is-active'); });
+                    if (map[e.target.id]) map[e.target.id].classList.add('is-active');
+                });
+            }, { rootMargin: '-20% 0px -70% 0px' });
+
+            Object.keys(map).forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) io.observe(el);
+            });
+        })();
+    </script>
+}

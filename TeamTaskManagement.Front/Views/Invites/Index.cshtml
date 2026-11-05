@@ -1,0 +1,562 @@
+﻿@using TeamTaskManagement.Application.Teams.Queries.GetMyInvites
+@using TeamTaskManagement.Application.Teams.Responses
+@using TeamTaskManagement.Domain.Enums
+@model IReadOnlyList<InviteResponse>
+
+@{
+    ViewData["Title"] = "دعوت‌نامه‌های من";
+}
+
+<style>
+    /* Card styling */
+    .ttm-invite-card {
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    html[data-theme="dark"] .ttm-invite-card {
+        background: #1A1A1A;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .ttm-invite-card:hover {
+        border-color: var(--ttm-primary);
+        box-shadow: 0 8px 24px rgba(91, 33, 182, 0.15);
+    }
+
+    html[data-theme="dark"] .ttm-invite-card:hover {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .ttm-invite-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .ttm-invite-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--ttm-text);
+        margin: 0;
+    }
+
+    .ttm-invite-status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .ttm-status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FCD34D;
+    }
+
+    .ttm-status-accepted {
+        background: #DCFCE7;
+        color: #166534;
+        border: 1px solid #86EFAC;
+    }
+
+    .ttm-status-rejected {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    .ttm-status-cancelled {
+        background: #F3F4F6;
+        color: #6B7280;
+        border: 1px solid #D1D5DB;
+    }
+
+    html[data-theme="dark"] .ttm-status-pending {
+        background: #713F12;
+        color: #FCD34D;
+        border-color: #92400E;
+    }
+
+    html[data-theme="dark"] .ttm-status-accepted {
+        background: #164E63;
+        color: #86EFAC;
+        border-color: #166534;
+    }
+
+    html[data-theme="dark"] .ttm-status-rejected {
+        background: #7F1D1D;
+        color: #FECACA;
+        border-color: #991B1B;
+    }
+
+    html[data-theme="dark"] .ttm-status-cancelled {
+        background: #374151;
+        color: #D1D5DB;
+        border-color: #6B7280;
+    }
+
+    .ttm-invite-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--ttm-border);
+    }
+
+    @@media (max-width: 576px) {
+        .ttm-invite-details {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .ttm-invite-detail-item {
+        font-size: 0.85rem;
+    }
+
+    .ttm-invite-detail-label {
+        display: block;
+        color: var(--ttm-muted);
+        font-size: 0.75rem;
+        margin-bottom: 0.3rem;
+        font-weight: 500;
+    }
+
+    .ttm-invite-detail-value {
+        color: var(--ttm-text);
+        font-weight: 500;
+    }
+
+    .ttm-invite-roles {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+    }
+
+    .ttm-role-badge {
+        display: inline-block;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: #F3E8FF;
+        color: var(--ttm-primary);
+        border: 1px solid #E9D5FF;
+    }
+
+    html[data-theme="dark"] .ttm-role-badge {
+        background: #2D1B4E;
+        border-color: #4C2D6B;
+        color: #A78BFA;
+    }
+
+    .ttm-invite-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .ttm-invite-actions .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.9rem;
+    }
+
+    .ttm-filters-box {
+        background: var(--ttm-surface);
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    html[data-theme="dark"] .ttm-filters-box {
+        background: #1A1A1A;
+    }
+
+    .ttm-filters-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    @@media (max-width: 992px) {
+        .ttm-filters-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .ttm-filters-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .ttm-page-header {
+        margin-bottom: 2rem;
+    }
+
+    .ttm-page-header h1 {
+        color: var(--ttm-text);
+        margin: 0 0 0.25rem 0;
+    }
+
+    .ttm-page-header p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .ttm-empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .ttm-empty-icon {
+        font-size: 3rem;
+        color: var(--ttm-border);
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    .form-label {
+        color: var(--ttm-text);
+        margin-bottom: 0.35rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .form-select,
+    .form-control {
+        background: var(--ttm-surface);
+        color: var(--ttm-text);
+        border-color: var(--ttm-border);
+        font-size: 0.88rem;
+    }
+
+    .form-select:focus,
+    .form-control:focus {
+        background: var(--ttm-surface);
+        color: var(--ttm-text);
+        border-color: var(--ttm-primary);
+        box-shadow: 0 0 0 0.25rem rgba(91, 33, 182, 0.1);
+    }
+
+    .btn-primary {
+        background-color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: var(--ttm-primary-dark);
+        border-color: var(--ttm-primary-dark);
+        box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+    }
+
+    html[data-theme="dark"] .btn-primary:hover,
+    html[data-theme="dark"] .btn-primary:focus {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .btn-success {
+        background-color: #16A34A;
+        border-color: #16A34A;
+    }
+
+    .btn-success:hover,
+    .btn-success:focus {
+        background-color: #15803D;
+        border-color: #15803D;
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.25);
+    }
+
+    .btn-danger {
+        background-color: var(--ttm-danger);
+        border-color: var(--ttm-danger);
+    }
+
+    .btn-danger:hover,
+    .btn-danger:focus {
+        background-color: #B91C1C;
+        border-color: #B91C1C;
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.25);
+    }
+
+    .ttm-invites-container {
+        margin-bottom: 2rem;
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-invites-container {
+            margin-bottom: 6rem;
+        }
+    }
+
+    .ttm-action-disabled {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--ttm-muted);
+        padding: 0.4rem 0.9rem;
+    }
+    .ttm-filters-box {
+    border: 1px solid var(--ttm-border);
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+html[data-theme="dark"] .ttm-filters-box {
+    background: #1A1A1A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ttm-filters-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+@@media (max-width: 992px) {
+    .ttm-filters-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@@media (max-width: 576px) {
+    .ttm-filters-row {
+        grid-template-columns: 1fr;
+    }
+
+    .ttm-filters-row > div:last-child {
+        grid-column: 1 / -1;
+    }
+}
+</style>
+
+<div class="ttm-page-header">
+    <h1 class="h3">دعوت‌نامه‌های من</h1>
+    <p class="text-muted">دریافت و ارسال دعوت‌نامه‌های تیم را مدیریت کنید</p>
+</div>
+
+<!-- Filters -->
+<div class="ttm-filters-box">
+    <form method="get" action="/Invites">
+        <div class="ttm-filters-row">
+            <div>
+                <label for="directionFilter" class="form-label">جهت دعوت‌نامه</label>
+                <select id="directionFilter" name="direction" class="form-select">
+                    <option value="">همه</option>
+                    @if (Context.Request.Query["direction"] == "sent") {
+                        <option value="sent" selected>ارسال‌شده</option>
+                    }
+                    else {
+                        <option value="sent">ارسال‌شده</option>
+                    }
+                    @if (Context.Request.Query["direction"] == "received") {
+                        <option value="received" selected>دریافت‌شده</option>
+                    }
+                    else {
+                        <option value="received">دریافت‌شده</option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label for="statusFilter" class="form-label">وضعیت</label>
+                <select id="statusFilter" name="status" class="form-select">
+                    @if (Context.Request.Query["status"] == "All" || string.IsNullOrEmpty(Context.Request.Query["status"])) {
+                        <option value="All" selected>همه</option>
+                    }
+                    else {
+                        <option value="All">همه</option>
+                    }
+                    @if (Context.Request.Query["status"] == "Pending") {
+                        <option value="Pending" selected>معلق</option>
+                    }
+                    else {
+                        <option value="Pending">معلق</option>
+                    }
+                    @if (Context.Request.Query["status"] == "NotPending") {
+                        <option value="NotPending" selected>غیر معلق</option>
+                    }
+                    else {
+                        <option value="NotPending">غیر معلق</option>
+                    }
+                    @if (Context.Request.Query["status"] == "Accepted") {
+                        <option value="Accepted" selected>پذیرفته</option>
+                    }
+                    else {
+                        <option value="Accepted">پذیرفته</option>
+                    }
+                    @if (Context.Request.Query["status"] == "Rejected") {
+                        <option value="Rejected" selected>رد شده</option>
+                    }
+                    else {
+                        <option value="Rejected">رد شده</option>
+                    }
+                    @if (Context.Request.Query["status"] == "Cancelled") {
+                        <option value="Cancelled" selected>لغو شده</option>
+                    }
+                    else {
+                        <option value="Cancelled">لغو شده</option>
+                    }
+                    @if (Context.Request.Query["status"] == "AutoCancelled") {
+                        <option value="AutoCancelled" selected>خودکار لغو شده</option>
+                    }
+                    else {
+                        <option value="AutoCancelled">خودکار لغو شده</option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label for="teamIdFilter" class="form-label">شناسه تیم (اختیاری)</label>
+                <input type="text" id="teamIdFilter" name="teamId" class="form-control" placeholder="شناسه GUID تیم" value="@Context.Request.Query["teamId"]">
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel"></i> اعمال
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@{
+    var direction = Context.Request.Query["direction"].ToString();
+    var status = Context.Request.Query["status"].ToString();
+    var teamId = Context.Request.Query["teamId"].ToString();
+    var hasFilters = !string.IsNullOrEmpty(direction) || !string.IsNullOrEmpty(status) || !string.IsNullOrEmpty(teamId);
+}
+
+<!-- Invites List -->
+@if (Model.Count == 0) {
+    <div class="ttm-empty-state">
+        <div class="ttm-empty-icon">
+            <i class="bi bi-inbox"></i>
+        </div>
+        @if (hasFilters) {
+            <p class="text-muted">دعوت‌نامه ای مطابق با این فیلتر یافت نشد.</p>
+        }
+        else {
+            <p class="text-muted">دعوت‌نامه ای موجود نیست.</p>
+        }
+    </div>
+}
+else {
+    <div class="ttm-invites-container">
+        @foreach (var invite in Model) {
+            <div class="ttm-invite-card">
+                <!-- Header -->
+                <div class="ttm-invite-header">
+                    <h5 class="ttm-invite-title">@invite.TeamDisplayname</h5>
+                    <span class="ttm-invite-status-badge ttm-status-@invite.Status.ToString().ToLower()">
+                        @invite.StatusText
+                    </span>
+                </div>
+
+                <!-- Details -->
+                <div class="ttm-invite-details">
+                    <!-- Sender/Receiver -->
+                    <div class="ttm-invite-detail-item">
+                            @if (invite.Direction == InviteDirectionResponse.SentByUser) {
+                                <span class="ttm-invite-detail-label">
+                                    <i class="bi bi-arrow-left"></i> گیرنده
+                                </span>
+                            } else if (invite.Direction == InviteDirectionResponse.ReceivedByUser) {
+                                <span class="ttm-invite-detail-label">
+                                    <i class="bi bi-arrow-right"></i> فرستنده
+                                </span>
+                            }
+                        <div class="ttm-invite-detail-value">
+                            @if (invite.Direction == InviteDirectionResponse.SentByUser) {
+                                @invite.Receiver.Displayname<br/>
+                                <small class="text-muted">@invite.Receiver.Email</small>
+                            } else if (invite.Direction == InviteDirectionResponse.ReceivedByUser) {
+                                @invite.Sender.UserDisplayname<br/>
+                                <small class="text-muted">@invite.Sender.UserEmail</small>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Roles -->
+                    <div class="ttm-invite-detail-item">
+                        <span class="ttm-invite-detail-label">نقش و دسترسی پیشنهادی</span>
+                        <div class="ttm-invite-roles">
+                            <span class="ttm-role-badge">
+                                <i class="bi bi-badge"></i> @invite.SuggestedRoleTitle
+                            </span>
+                            <span class="ttm-role-badge-access">
+                                <i class="bi bi-shield-check"></i> @invite.SuggestedAccessLevel
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="ttm-invite-detail-item">
+                        <span class="ttm-invite-detail-label">زمان ایجاد</span>
+                        <div class="ttm-invite-detail-value">
+                            @invite.CreatedAtUtc.ToString("g")
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="ttm-invite-actions">
+                    @if (invite.Direction == InviteDirectionResponse.ReceivedByUser && invite.Status == TeamInviteStatus.Sent) {
+                        <form method="post" action="/Invites/Accept" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="inviteId" value="@invite.InviteId">
+                            <input type="hidden" name="teamId" value="@invite.TeamId">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-check-circle"></i> پذیرش
+                            </button>
+                        </form>
+                        <form method="post" action="/Invites/Reject" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="inviteId" value="@invite.InviteId">
+                            <input type="hidden" name="teamId" value="@invite.TeamId">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="bi bi-x-circle"></i> رد
+                            </button>
+                        </form>
+                    }
+                    else if (invite.Direction == InviteDirectionResponse.SentByUser && invite.Status == TeamInviteStatus.Sent) {
+                        <form method="post" action="/Invites/Cancel" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="inviteId" value="@invite.InviteId">
+                            <input type="hidden" name="teamId" value="@invite.TeamId">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="bi bi-x-circle"></i> لغو
+                            </button>
+                        </form>
+                    }
+                    else {
+                        <span class="ttm-action-disabled">
+                            <i class="bi bi-info-circle"></i> دعوت‌نامه در وضعیت معلق نیست
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,33 @@
+﻿{
+  "name": "مدیریت وظایف تیم",
+  "short_name": "TTM",
+  "description": "سامانه مدیریت تیم و وظایف",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F5F3F0",
+  "theme_color": "#5B21B6",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/ttm.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/ttm2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/ttm3.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

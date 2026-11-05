@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.31" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.30">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TeamTaskManagement.Application\TeamTaskManagement.Application.csproj" />
+    <ProjectReference Include="..\TeamTaskManagement.Infrastructure\TeamTaskManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\TeamTaskManagement.Persistence\TeamTaskManagement.Persistence.csproj" />
+    <ProjectReference Include="..\TeamTaskManagement.Shared\TeamTaskManagement.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

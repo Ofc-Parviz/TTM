@@ -1,0 +1,315 @@
+﻿@using TeamTaskManagement.Application.Users.Responses
+@model UserResponse
+
+@{
+    ViewData["Title"] = "پروفایل من";
+}
+
+<style>
+    .ttm-profile-header {
+        margin-bottom: 2rem;
+    }
+
+        .ttm-profile-header h1 {
+            color: var(--ttm-text);
+            margin: 0;
+        }
+
+    .ttm-card {
+        border: 1px solid var(--ttm-border);
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    html[data-theme="dark"] .ttm-card {
+        background: #1A1A1A;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .ttm-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--ttm-border);
+    }
+
+        .ttm-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .ttm-info-row label {
+            font-weight: 500;
+            color: var(--ttm-muted);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .ttm-info-row span {
+            color: var(--ttm-text);
+            text-align: left;
+            direction: ltr;
+        }
+
+    .btn-primary {
+        background-color: var(--ttm-primary);
+        border-color: var(--ttm-primary);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: var(--ttm-primary-dark);
+            border-color: var(--ttm-primary-dark);
+            box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+        }
+
+    html[data-theme="dark"] .btn-primary:hover,
+    html[data-theme="dark"] .btn-primary:focus {
+        box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+    }
+
+    .form-control {
+        background: var(--ttm-surface);
+        color: var(--ttm-text);
+        border-color: var(--ttm-border);
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus {
+            background: var(--ttm-surface);
+            color: var(--ttm-text);
+            border-color: var(--ttm-primary);
+            box-shadow: 0 0 0 0.25rem rgba(91, 33, 182, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--ttm-muted);
+            opacity: 0.6;
+        }
+
+        .form-control:disabled,
+        .form-control[readonly] {
+            background: #F9F9F9;
+            color: var(--ttm-muted);
+            border-color: var(--ttm-border);
+            cursor: not-allowed;
+        }
+
+    html[data-theme="dark"] .form-control:disabled,
+    html[data-theme="dark"] .form-control[readonly] {
+        background: #252525;
+        color: var(--ttm-muted);
+    }
+
+    .form-label {
+        color: var(--ttm-text);
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-text {
+        color: var(--ttm-muted);
+        font-size: 0.8rem;
+    }
+
+    .ttm-profile-grid {
+        margin-bottom: 2rem;
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-profile-grid {
+            margin-bottom: 6rem;
+        }
+
+        .ttm-info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+            .ttm-info-row span {
+                direction: rtl;
+            }
+    }
+
+    .ttm-card-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--ttm-border);
+    }
+
+        .ttm-card-header h5 {
+            color: var(--ttm-text);
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+    .ttm-card-body {
+        padding: 1.25rem;
+    }
+
+    .ttm-form-group {
+        margin-bottom: 1.25rem;
+    }
+
+        .ttm-form-group:last-child {
+            margin-bottom: 0;
+        }
+
+    .ttm-password-note {
+        background: #FFFBEB;
+        border: 1px solid #FDE047;
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 1.25rem;
+        font-size: 0.85rem;
+        color: #92400E;
+    }
+
+    html[data-theme="dark"] .ttm-password-note {
+        background: #422C0C;
+        border-color: #78350F;
+        color: #FCD34D;
+    }
+
+    .ttm-divider {
+        height: 1px;
+        background: var(--ttm-border);
+        margin: 1.5rem 0;
+    }
+
+    .alert {
+        border-radius: 10px;
+        font-size: 0.88rem;
+    }
+</style>
+
+<div class="ttm-profile-header">
+    <h1 class="h3">پروفایل من</h1>
+</div>
+
+<!-- User Info Card -->
+<div class="row ttm-profile-grid mb-4 justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        <div class="ttm-card">
+            <div class="ttm-card-header">
+                <h5>
+                    <i class="bi bi-person-circle"></i> اطلاعات حساب کاربری
+                </h5>
+            </div>
+            <div class="ttm-card-body">
+                <div class="ttm-info-row">
+                    <label>نام نمایشی:</label>
+                    <span>@Model.Displayname</span>
+                </div>
+                <div class="ttm-info-row">
+                    <label>نام:</label>
+                    <span>@Model.Firstname</span>
+                </div>
+                <div class="ttm-info-row">
+                    <label>نام خانوادگی:</label>
+                    <span>@Model.Lastname</span>
+                </div>
+                <div class="ttm-info-row">
+                    <label>ایمیل:</label>
+                    <span>@Model.Email</span>
+                </div>
+                @if (Model.CreatedAtUtc != default) {
+                    <div class="ttm-info-row">
+                        <label>عضویت از:</label>
+                        <span>@Model.CreatedAtUtc.ToString("yyyy-MM-dd")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Form -->
+<div class="row ttm-profile-grid mb-4 justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        <div class="ttm-card">
+            <div class="ttm-card-header">
+                <h5>
+                    <i class="bi bi-pencil"></i> ویرایش پروفایل
+                </h5>
+            </div>
+            <div class="ttm-card-body">
+                <form method="post" action="/Profile/Update">
+                    @Html.AntiForgeryToken()
+
+                    <div class="ttm-form-group">
+                        <label for="displayname" class="form-label">نام نمایشی <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="displayname" name="Displayname" value="@Model.Displayname" required maxlength="100" />
+                    </div>
+
+                    <div class="ttm-form-group">
+                        <label for="firstname" class="form-label">نام <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="firstname" name="Firstname" value="@Model.Firstname" required maxlength="50" />
+                    </div>
+
+                    <div class="ttm-form-group">
+                        <label for="lastname" class="form-label">نام خانوادگی <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="lastname" name="Lastname" value="@Model.Lastname" required maxlength="50" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check"></i> ذخیره تغییرات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Form -->
+<div class="row ttm-profile-grid mb-4 justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        <div class="ttm-card">
+            <div class="ttm-card-header">
+                <h5>
+                    <i class="bi bi-lock"></i> تغییر رمز عبور
+                </h5>
+            </div>
+            <div class="ttm-card-body">
+                <div class="ttm-password-note">
+                    <i class="bi bi-info-circle"></i>
+                    رمز عبور خود را هر چند وقت یکبار تغییر دهید تا حسابتان ایمن بماند.
+                </div>
+
+                <form method="post" action="/Profile/ChangePassword">
+                    @Html.AntiForgeryToken()
+
+                    <div class="ttm-form-group">
+                        <label for="currentPassword" class="form-label">رمز عبور فعلی <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="currentPassword" name="CurrentPassword" required autocomplete="current-password" />
+                        <small class="form-text">برای تایید تغییرات به رمز عبور فعلی نیاز دارید</small>
+                    </div>
+
+                    <div class="ttm-divider"></div>
+
+                    <div class="ttm-form-group">
+                        <label for="newPassword" class="form-label">رمز عبور جدید <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="newPassword" name="NewPassword" required autocomplete="new-password" />
+                        <small class="form-text">حداقل 8 کاراکتر شامل حروف بزرگ، کوچک و اعداد</small>
+                    </div>
+
+                    <div class="ttm-form-group">
+                        <label for="confirmNewPassword" class="form-label">تایید رمز عبور جدید <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirmNewPassword" name="ConfirmNewPassword" required autocomplete="new-password" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-shield-check"></i> تغییر رمز عبور
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

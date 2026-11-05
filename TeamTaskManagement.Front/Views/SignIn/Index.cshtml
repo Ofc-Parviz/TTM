@@ -1,0 +1,197 @@
+﻿@{
+    ViewData["Title"] = "Sign In";
+    string? loginError = ViewData["LoginError"] as string;
+    string? registerError = ViewData["RegisterError"] as string;
+    string? registerSuccess = ViewData["RegisterSuccess"] as string;
+    bool isLogin = (ViewData["ActiveTab"] as string) != "register";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/signin.css" />
+}
+
+<div class="auth-page">
+    <div class="auth-shell">
+        <div class="row g-0">
+
+            @* ───────── Form column ───────── *@
+            <div class="col-12 auth-form-col">
+
+                <ul class="nav nav-pills nav-fill auth-tabs mb-4" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(isLogin ? "active" : "")" id="tab-login"
+                                data-bs-toggle="pill" data-bs-target="#pane-login"
+                                type="button" role="tab" aria-controls="pane-login"
+                                aria-selected="@(isLogin ? "true" : "false")">
+                            ورود
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(!isLogin ? "active" : "")" id="tab-register"
+                                data-bs-toggle="pill" data-bs-target="#pane-register"
+                                type="button" role="tab" aria-controls="pane-register"
+                                aria-selected="@(!isLogin ? "true" : "false")">
+                            ثبت نام
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+
+                    @* ── Login ── *@
+                    <div class="tab-pane fade @(isLogin ? "show active" : "")" id="pane-login" role="tabpanel" aria-labelledby="tab-login">
+
+                        <div class="auth-badge"><i class="bi bi-person-check"></i></div>
+                        <h1 class="auth-title">خوش برگشتی</h1>
+                        <p class="auth-sub">برای ادامه، وارد حساب خود شوید.</p>
+
+                        @if (!string.IsNullOrWhiteSpace(loginError)) {
+                            <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span>@loginError</span>
+                            </div>
+                        }
+
+                        <form method="post" action="/SignIn">
+                            @Html.AntiForgeryToken()
+
+                            <div class="mb-3">
+                                <label for="login-email" class="auth-label">ایمیل</label>
+                                <div class="auth-field">
+                                    <i class="bi bi-envelope auth-icon"></i>
+                                    <input type="email" class="form-control" id="login-email" name="Email"
+                                           dir="auto" autocomplete="email" placeholder="name@example.com" required />
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="login-password" class="auth-label">رمز عبور</label>
+                                <div class="auth-field has-toggle">
+                                    <i class="bi bi-lock auth-icon"></i>
+                                    <input type="password" class="form-control" id="login-password" name="Password"
+                                           dir="auto" autocomplete="current-password" required />
+                                    <button type="button" class="auth-toggle" data-toggle-password="login-password" aria-label="نمایش رمز عبور">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-ttm w-100">
+                                ورود به سیستم <i class="bi bi-arrow-left"></i>
+                            </button>
+                        </form>
+
+                        <p class="auth-switch">
+                            حساب کاربری ندارید؟
+                            <button type="button" class="btn btn-link auth-link p-0 align-baseline" data-switch-tab="tab-register">ثبت نام</button>
+                        </p>
+                    </div>
+
+                    @* ── Register ── *@
+                    <div class="tab-pane fade @(!isLogin ? "show active" : "")" id="pane-register" role="tabpanel" aria-labelledby="tab-register">
+
+                        <div class="auth-badge"><i class="bi bi-person-plus"></i></div>
+                        <h1 class="auth-title">ساخت حساب جدید</h1>
+                        <p class="auth-sub">در چند ثانیه ثبت نام کنید و تیم خود را بسازید. فیلد های ستاره دار(*) الزامی هستند.</p>
+
+                        @if (!string.IsNullOrWhiteSpace(registerError)) {
+                            <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span>@registerError</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(registerSuccess)) {
+                            <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>@registerSuccess</span>
+                            </div>
+                        }
+
+                        <form method="post" action="/SignIn/Register">
+                            @Html.AntiForgeryToken()
+
+                            <div class="mb-3">
+                                <label for="reg-email" class="auth-label">ایمیل *</label>
+                                <div class="auth-field">
+                                    <i class="bi bi-envelope auth-icon"></i>
+                                    <input type="email" class="form-control" id="reg-email" name="Email"
+                                           dir="auto" autocomplete="email" placeholder="name@example.com" required />
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="reg-password" class="auth-label">رمز عبور *</label>
+                                <div class="auth-field has-toggle">
+                                    <i class="bi bi-lock auth-icon"></i>
+                                    <input type="password" class="form-control" id="reg-password" name="Password"
+                                           dir="auto" autocomplete="new-password" required />
+                                    <button type="button" class="auth-toggle" data-toggle-password="reg-password" aria-label="نمایش رمز عبور">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="reg-displayname" class="auth-label">نام نمایشی (قابل مشاهده توسط دیگران) *</label>
+                                <div class="auth-field">
+                                    <i class="bi bi-at auth-icon"></i>
+                                    <input type="text" class="form-control" id="reg-displayname" name="Displayname"
+                                           autocomplete="nickname" required />
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-sm-6">
+                                    <label for="reg-firstname" class="auth-label">نام کوچک *</label>
+                                    <div class="auth-field">
+                                        <i class="bi bi-person auth-icon"></i>
+                                        <input type="text" class="form-control" id="reg-firstname" name="Firstname"
+                                               autocomplete="given-name" required />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label for="reg-lastname" class="auth-label">نام خانوادگی *</label>
+                                    <div class="auth-field">
+                                        <i class="bi bi-person auth-icon"></i>
+                                        <input type="text" class="form-control" id="reg-lastname" name="Lastname"
+                                               autocomplete="family-name" required />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-ttm w-100">
+                                ثبت نام و ورود آنی <i class="bi bi-arrow-left"></i>
+                            </button>
+                        </form>
+
+                        <p class="auth-switch">
+                            قبلاً ثبت نام کرده اید؟
+                            <button type="button" class="btn btn-link auth-link p-0 align-baseline" data-switch-tab="tab-login">ورود</button>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('[data-switch-tab]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                bootstrap.Tab.getOrCreateInstance(document.getElementById(el.dataset.switchTab)).show();
+            });
+        });
+
+        document.querySelectorAll('[data-toggle-password]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.dataset.togglePassword);
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+                btn.setAttribute('aria-label', show ? 'پنهان کردن رمز عبور' : 'نمایش رمز عبور');
+            });
+        });
+    </script>
+}

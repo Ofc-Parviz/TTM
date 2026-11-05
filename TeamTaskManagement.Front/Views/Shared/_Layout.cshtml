@@ -1,0 +1,664 @@
+﻿@* _Layout.cshtml — رنگ بندی: بنفش تیره + سفید دودی + حالت تاریک *@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TTM</title>
+    <link rel="icon" type="image/png" href="~/ttm.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" />
+    <style>
+        :root {
+            --ttm-primary: #5B21B6;
+            --ttm-primary-dark: #4C1D95;
+            --ttm-surface: #F5F3F0;
+            --ttm-border: #E5E0DB;
+            --ttm-text: #1E293B;
+            --ttm-muted: #64748B;
+            --ttm-danger: #DC2626;
+            --ttm-nav-h: 60px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, html[data-theme="light"], html[data-theme="dark"] {
+            transition: background-color .6s cubic-bezier(0.25, 0.46, 0.45, 0.94), color .6s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--ttm-surface);
+            color: var(--ttm-text);
+            font-size: 0.925rem;
+            line-height: 1.7;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Navbar ── */
+        .ttm-navbar {
+            height: var(--ttm-nav-h);
+            background: #FFFFFF;/*  #FDFBF9; */
+            border-bottom: 1px solid var(--ttm-border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        html[data-theme="dark"] .ttm-navbar {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .ttm-navbar,
+        .ttm-bottom-nav,
+        .ttm-footer,
+        .ttm-nav-link,
+        .btn-ttm-login {
+            transition: background-color .6s cubic-bezier(0.25, 0.46, 0.45, 0.94), color .6s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .ttm-brand {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--ttm-primary);
+            text-decoration: none;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+            .ttm-brand .brand-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--ttm-primary);
+                display: inline-block;
+            }
+
+         .ttm-brand-badge {
+            display: inline-block;
+            font-size: 0.5rem;
+            font-weight: 600;
+            background: var(--ttm-primary);
+            color: #fff;
+            padding: 2px 5px;
+            border-radius: 3px;
+            letter-spacing: 0.02em;
+            margin-right: 4px;
+        }
+
+        .ttm-brand-sub {
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: var(--ttm-muted);
+            letter-spacing: 0.03em;
+            margin-top: 3px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+            .ttm-brand-sub .badge-en {
+                display: inline-block;
+                font-size: 0.55rem;
+                font-weight: 600;
+                background: var(--ttm-primary);
+                color: #fff;
+                padding: 2px 6px;
+                border-radius: 3px;
+                letter-spacing: 0.02em;
+            }
+
+        /* Auth nav links */
+        .ttm-nav-link {
+            color: var(--ttm-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: .35rem .65rem;
+            border-radius: 6px;
+            transition: color .15s, background .15s;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            white-space: nowrap;
+        }
+
+            .ttm-nav-link:hover,
+            .ttm-nav-link.active {
+                color: var(--ttm-primary);
+                background: #F3E8FF;
+            }
+
+            .ttm-nav-link .bi {
+                font-size: .92rem;
+                margin-top: 3px;
+            }
+
+        /* Exit link */
+        .ttm-nav-exit {
+            color: var(--ttm-danger);
+        }
+
+            .ttm-nav-exit:hover {
+                color: var(--ttm-danger);
+                background: #FEF2F2;
+            }
+
+        /* Mobile bottom nav (auth only) */
+        .ttm-bottom-nav {
+            position: relative;
+            z-index: 1029;
+            background: #fff;
+            border-top: 1px solid var(--ttm-border);
+            display: flex;
+            height: 58px;
+        }
+
+            .ttm-bottom-nav a {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.68rem;
+                font-weight: 500;
+                color: var(--ttm-muted);
+                text-decoration: none;
+                gap: 1px;
+                transition: color .15s;
+            }
+
+                .ttm-bottom-nav a .bi {
+                    font-size: 1.2rem;
+                    margin-bottom: -12px;
+                }
+
+                .ttm-bottom-nav a.active,
+                .ttm-bottom-nav a:hover {
+                    color: var(--ttm-primary);
+                }
+
+                .ttm-bottom-nav a.exit-link:hover {
+                    color: var(--ttm-danger);
+                }
+
+        /* Page content wrapper */
+        .ttm-main {
+            padding-top: 1.5rem;
+            padding-bottom: 2rem;
+            flex: 1;
+        }
+
+        @@media (max-width: 767px) {
+            .ttm-main {
+                padding-bottom: 0;
+            }
+        }
+
+        @@media (min-width: 768px) {
+            .ttm-bottom-nav {
+                display: none;
+            }
+
+            .ttm-main {
+                padding-bottom: 2rem;
+            }
+        }
+
+        /* Guest header login btn */
+        .btn-ttm-login {
+            background: var(--ttm-primary);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.3rem 0.9rem;
+            border-radius: 8px;
+            border: none;
+            text-decoration: none;
+            transition: background .15s;
+        }
+
+            .btn-ttm-login:hover {
+                background: var(--ttm-primary-dark);
+                color: #fff;
+                box-shadow: 0 8px 24px rgba(91, 33, 182, 0.25);
+            }
+
+        html[data-theme="dark"] .btn-ttm-login:hover {
+            box-shadow: 0 8px 24px rgba(149, 101, 224, 0.5);
+        }
+
+
+        /* Global alert tweaks */
+        .alert {
+            border-radius: 10px;
+            font-size: 0.88rem;
+        }
+
+        html[data-theme="dark"] .alert-success {
+            background: #14201A;
+            border-color: #1E3A28;
+            color: #86D9A0;
+        }
+
+        html[data-theme="dark"] .alert-danger {
+            background: #201416;
+            border-color: #3D2226;
+            color: #F09A9A;
+        }
+
+        html[data-theme="dark"] .alert .btn-close {
+            filter: invert(1) grayscale(100%) brightness(160%);
+            opacity: .6;
+        }
+
+            html[data-theme="dark"] .alert .btn-close:hover {
+                opacity: 1;
+            }
+
+        html[data-theme="dark"] .alert-warning {
+            background-color: #3D2817;
+            border-color: #6B4423;
+            color: #FCD34D;
+        }
+
+            html[data-theme="dark"] .alert-warning strong {
+                color: #FCD34D;
+            }
+
+
+        /* Footer */
+        .ttm-footer {
+            padding: 0.1rem 0;
+            text-align: center;
+            color: var(--ttm-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-top: 1px solid var(--ttm-border);
+            margin-top: auto;
+            z-index: 1031;
+        }
+
+        @@media (max-width: 767px) {
+            .ttm-footer {
+                font-size: 0.7rem;
+                padding: 0.05rem 0;
+            }
+
+                .ttm-footer a .container {
+                    margin-top: 2px;
+
+                }
+        }
+
+        .ttm-footer a {
+            color: var(--ttm-primary);
+            text-decoration: none;
+            transition: color .15s;
+        }
+
+            .ttm-footer a:hover {
+                color: var(--ttm-primary-dark);
+            }
+
+
+        /* Dark mode toggle */
+        .ttm-theme-toggle {
+            background: var(--ttm-border);
+            border: none;
+            color: var(--ttm-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 0;
+            border-radius: 20px;
+            transition: background .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 52px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .ttm-theme-toggle::before {
+                content: '';
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                background: #fff;
+                border-radius: 50%;
+                transition: left .6s cubic-bezier(0.25, 0.46, 0.45, 0.94), right .6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                right: 2px;
+                z-index: 0;
+            }
+
+        html[data-theme="dark"] .ttm-theme-toggle::before {
+            left: 2px;
+            right: auto;
+        }
+
+            .ttm-theme-toggle i {
+                position: relative;
+                z-index: 1;
+                margin-left: 4px;
+                margin-right: 2px;
+                margin-top: 6px;
+                transition: opacity .2s;
+            }
+
+                .ttm-theme-toggle i.bi-moon-stars {
+                    opacity: 1;
+                }
+
+                .ttm-theme-toggle i.bi-sun {
+                    opacity: 0;
+                    position: absolute;
+                    color: #fff;
+                    right: 2px;
+                }
+
+        html[data-theme="dark"] .ttm-theme-toggle i.bi-moon-stars {
+            opacity: 0;
+        }
+
+        html[data-theme="dark"] .ttm-theme-toggle i.bi-sun {
+            opacity: 1;
+        }
+
+            .ttm-theme-toggle:hover {
+                background: #D4CCBF;
+            }
+
+        html[data-theme="dark"] .ttm-theme-toggle {
+            background: var(--ttm-primary);
+            justify-content: flex-start;
+        }
+
+            html[data-theme="dark"] .ttm-theme-toggle::before {
+                transform: translateX(0);
+                left: 2px;
+                right: auto;
+            }
+
+        /* Dark mode colors */
+        html[data-theme="dark"] {
+            --ttm-primary: #9565E0;
+            --ttm-primary-dark: #8A54D4;
+            --ttm-surface: #0F0F0F;
+            --ttm-border: #2B2B2B;
+            --ttm-text: #D4D4D4;
+            --ttm-muted: #808080;
+        }
+
+            html[data-theme="dark"] body {
+                background-color: var(--ttm-surface);
+                color: var(--ttm-text);
+            }
+
+            html[data-theme="dark"] .ttm-navbar {
+                background: #1A1A1A;
+                border-bottom-color: var(--ttm-border);
+            }
+
+            html[data-theme="dark"] .ttm-nav-link:hover,
+            html[data-theme="dark"] .ttm-nav-link.active {
+                background: #252525;
+                color: #A78BFA;
+            }
+
+            html[data-theme="dark"] .ttm-bottom-nav,
+            html[data-theme="dark"] .ttm-footer {
+                background: #1A1A1A;
+                border-color: var(--ttm-border);
+            }
+
+            html[data-theme="dark"] .btn-ttm-login {
+                background: var(--ttm-primary);
+            }
+
+                html[data-theme="dark"] .btn-ttm-login:hover {
+                    background: var(--ttm-primary-dark);
+                }
+
+            html[data-theme="dark"] .ttm-nav-exit {
+                color: #F87171;
+            }
+
+                html[data-theme="dark"] .ttm-nav-exit:hover {
+                    color: #F87171;
+                    background: #422828;
+                }
+
+            html[data-theme="dark"] .text-muted {
+                color: var(--ttm-muted) !important;
+            }
+
+        .ttm-role-badge-access {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: #DDD6FE;
+            color: var(--ttm-primary);
+            border: 1px solid #C4B5FD;
+            white-space: nowrap;
+        }
+
+        html[data-theme="dark"] .ttm-role-badge-access {
+            background: #3B2667;
+            border-color: #5B3A99;
+            color: #D8B4FE;
+        }
+
+        .form-control::placeholder {
+            color: var(--ttm-muted);
+            opacity: 0.7;
+        }
+
+        html[data-theme="dark"] .form-control::placeholder {
+            color: var(--ttm-muted);
+            opacity: 1;
+        }
+
+        html[data-theme="dark"] .ttm-edit-accordion .accordion-button::after {
+            filter: invert(1) brightness(1.2);
+        }
+    </style>
+    <script>
+        // Dark mode toggle
+        (function () {
+            const theme = localStorage.getItem('ttm-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('ttm-theme', next);
+        }
+    </script>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+    @{
+        bool isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+        string? currentPath = Context.Request.Path.Value;
+    }
+
+    @* ── Navbar ── *@
+    <nav class="ttm-navbar">
+        <div class="container d-flex align-items-center justify-content-between h-100">
+
+            @* Brand *@
+            <a href="/" class="ttm-brand">
+                <span class="brand-dot"></span>
+                <div>
+                    <div style="display: flex; align-items: center; gap: .45rem;">
+                        <span class="ttm-brand-badge">اوپن سورس</span>
+                        <span>
+                            مدیریت وظایف تیم
+                        </span>
+                    </div>
+                    <div class="ttm-brand-sub">
+                        TeamTaskManagement - PWA
+                    </div>
+                </div>
+            </a>
+
+            @if (isAuthenticated) {
+
+                @* Desktop nav *@
+                <div class="d-none d-md-flex align-items-center gap-1">
+
+                    <a href="/Teams" class="ttm-nav-link @(currentPath?.StartsWith("/Teams") == true ? "active" : "")">
+                        <i class="bi bi-people"></i> تیم‌ها
+                    </a>
+                    <a href="/Tasks" class="ttm-nav-link @(currentPath?.StartsWith("/Tasks") == true ? "active" : "")">
+                        <i class="bi bi-check2-square"></i> وظایف
+                    </a>
+                    <a href="/Invites" class="ttm-nav-link @(currentPath?.StartsWith("/Invites") == true ? "active" : "")">
+                        <i class="bi bi-envelope"></i> دعوت‌ها
+                    </a>
+                    <a href="/Profile" class="ttm-nav-link @(currentPath?.StartsWith("/Profile") == true ? "active" : "")">
+                        <i class="bi bi-person-circle"></i> پروفایل
+                    </a>
+                    <span class="mx-1 text-muted" style="opacity:.3">|</span>
+
+                    @* Theme toggle *@
+                    <button type="button" class="ttm-theme-toggle" onclick="toggleTheme()" title="تغییر تم">
+                        <i class="bi bi-moon-stars"></i>
+                        <i class="bi bi-sun"></i>
+                    </button>
+
+                    <a href="/SignIn/Logout" class="ttm-nav-link ttm-nav-exit">
+                        <i class="bi bi-box-arrow-left"></i> خروج
+                    </a>
+                </div>
+            }
+            else {
+
+                <div class="d-none d-md-flex align-items-center gap-1">
+
+                    @* Theme toggle *@
+                    <button type="button" class="ttm-theme-toggle" onclick="toggleTheme()" title="تغییر تم">
+                        <i class="bi bi-moon-stars"></i>
+                        <i class="bi bi-sun"></i>
+                    </button>
+
+                    <span class="mx-1 text-muted" style="opacity:.3">|</span>
+
+                    <a href="/SignIn" class="btn-ttm-login">ورود / ثبت‌نام</a>
+
+                </div>
+            }
+
+            @* Mobile theme toggle *@
+            <button type="button" class="ttm-theme-toggle d-md-none" onclick="toggleTheme()" title="تغییر تم">
+                <i class="bi bi-moon-stars"></i>
+                <i class="bi bi-sun"></i>
+            </button>
+
+        </div>
+    </nav>
+
+    @* ── Main Content ── *@
+    <main class="ttm-main">
+        <div class="container">
+
+            @if (TempData["SuccessMessage"] is string success) {
+                <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span class="flex-grow-1">@success</span>
+                    <button type="button" class="btn-close ms-0" data-bs-dismiss="alert" aria-label="بستن"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] is string error) {
+                <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span class="flex-grow-1">@error</span>
+                    <button type="button" class="btn-close ms-0" data-bs-dismiss="alert" aria-label="بستن"></button>
+                </div>
+            }
+
+            @RenderBody()
+        </div>
+    </main>
+
+    @if (isAuthenticated) {
+        <nav class="ttm-bottom-nav d-md-none">
+            <a href="/Teams" class="@(currentPath?.StartsWith("/Teams") == true ? "active" : "")">
+                <i class="bi bi-people"></i>
+                تیم‌ها
+            </a>
+            <a href="/Tasks" class="@(currentPath?.StartsWith("/Tasks") == true ? "active" : "")">
+                <i class="bi bi-check2-square"></i>
+                وظایف
+            </a>
+            <a href="/Invites" class="@(currentPath?.StartsWith("/Invites") == true ? "active" : "")">
+                <i class="bi bi-envelope"></i>
+                دعوت‌ها
+            </a>
+            <a href="/Profile" class="@(currentPath?.StartsWith("/Profile") == true ? "active" : "")">
+                <i class="bi bi-person-circle"></i>
+                پروفایل
+            </a>
+            <a href="/SignIn/Logout" class="exit-link">
+                <i class="bi bi-box-arrow-left"></i>
+                خروج
+            </a>
+        </nav>
+    }
+    else {
+        <nav class="ttm-bottom-nav d-md-none">
+            <a href="/SignIn" class="@(currentPath?.StartsWith("/SignIn") == true ? "active" : "")">
+                <i class="bi bi-person-check"></i>
+                ورود
+            </a>
+            <a href="/Home/Docs" class="@(currentPath?.StartsWith("/Home/Docs") == true ? "active" : "")">
+                <i class="bi bi-book"></i>
+                مستندات
+            </a>
+        </nav>
+    }
+
+    @* ── Footer ── *@
+    <footer class="ttm-footer">
+        <div class="container">
+            طراحی و توسعه : <a href="https://github.com/ofc-parviz" target="_blank">github.com/ofc-parviz</a>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

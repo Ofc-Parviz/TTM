@@ -1,0 +1,789 @@
+﻿@using TeamTaskManagement.Shared.Enums
+@using TeamTaskManagement.Domain.Enums
+@using TeamTaskManagement.Application.TeamTasks.Responses
+@using TeamTaskManagement.Web.Helpers
+@model TasksForTeamResponse
+
+@{
+    ViewData["Title"] = $"وظایف تیم «{Model.TeamDisplayname}»";
+    var isFiltered = Model.AppliedStatusFilter != TeamTaskStatusFilter.All;
+    var filterOptions = new (TeamTaskStatusFilter Value, string Text)[] {
+        (TeamTaskStatusFilter.All, "همه وظایف"),
+        (TeamTaskStatusFilter.Open, "وظایف باز"),
+        (TeamTaskStatusFilter.Closed, "وظایف بسته")
+    };
+}
+
+<style>
+    /* ── Status badges ── */
+    .ttm-status-badge {
+        display: inline-block;
+        padding: 0.3rem 0.65rem;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .ttm-status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .ttm-status-ongoing {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .ttm-status-claimed-complete {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .ttm-status-claimed-failure {
+        background: #FEDBA8;
+        color: #92400E;
+    }
+
+    .ttm-status-ordered-retry {
+        background: #E9D5FF;
+        color: #6B21A8;
+    }
+
+    .ttm-status-accepted-retry {
+        background: #F3E8FF;
+        color: #7E22CE;
+    }
+
+    .ttm-status-rejected-retry {
+        background: #E5E7EB;
+        color: #374151;
+    }
+
+    .ttm-status-closed-failure {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .ttm-status-closed-deadline {
+        background: #7F1D1D;
+        color: #FCA5A5;
+    }
+
+    .ttm-status-closed-complete {
+        background: #DCFCE7;
+        color: #166534;
+    }
+
+    html[data-theme="dark"] .ttm-status-pending {
+        background: #78350F;
+        color: #FCD34D;
+    }
+
+    html[data-theme="dark"] .ttm-status-ongoing {
+        background: #1E3A8A;
+        color: #93C5FD;
+    }
+
+    html[data-theme="dark"] .ttm-status-claimed-complete {
+        background: #065F46;
+        color: #86EFAC;
+    }
+
+    html[data-theme="dark"] .ttm-status-claimed-failure {
+        background: #92400E;
+        color: #FDE68A;
+    }
+
+    html[data-theme="dark"] .ttm-status-ordered-retry {
+        background: #6B21A8;
+        color: #E9D5FF;
+    }
+
+    html[data-theme="dark"] .ttm-status-accepted-retry {
+        background: #581C87;
+        color: #F3E8FF;
+    }
+
+    html[data-theme="dark"] .ttm-status-rejected-retry {
+        background: #374151;
+        color: #E5E7EB;
+    }
+
+    html[data-theme="dark"] .ttm-status-closed-failure {
+        background: #7F1D1D;
+        color: #FCA5A5;
+    }
+
+    html[data-theme="dark"] .ttm-status-closed-deadline {
+        background: #5B0F0F;
+        color: #FECACA;
+    }
+
+    html[data-theme="dark"] .ttm-status-closed-complete {
+        background: #143016;
+        color: #86EFAC;
+    }
+
+    /* ── Task card ── */
+    .task-card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+        .task-card-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+    .ttm-task-card {
+        background: #fff;
+        border: 1px solid var(--ttm-border);
+        border-right: 4px solid var(--ttm-primary);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    html[data-theme="dark"] .ttm-task-card {
+        background: #1A1A1A;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .task-card-link:hover .ttm-task-card {
+        border-color: var(--ttm-primary);
+        box-shadow: 0 6px 18px rgba(91, 33, 182, 0.15);
+    }
+
+    .ttm-task-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .ttm-task-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ttm-text);
+        margin: 0;
+        word-break: break-word;
+    }
+
+    .ttm-task-desc {
+        font-size: 0.85rem;
+        color: var(--ttm-muted);
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: pre-line;
+    }
+
+    .ttm-task-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1rem;
+        font-size: 0.8rem;
+        color: var(--ttm-muted);
+        padding-top: 0.6rem;
+        border-top: 1px dashed var(--ttm-border);
+    }
+
+    .ttm-my-position {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        background: #EDE9FE;
+        color: var(--ttm-primary);
+        border-radius: 3px;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    html[data-theme="dark"] .ttm-my-position {
+        background: #3730A3;
+        color: #C7D2FE;
+    }
+
+    .ttm-deadline.overdue {
+        color: var(--ttm-danger);
+        font-weight: 600;
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-task-top {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    .ttm-tasks-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-tasks-list {
+            margin-bottom: 6rem;
+        }
+    }
+
+    /* ── Filter card ── */
+    .ttm-filter-card {
+        --ttm-ctrl-h: calc(1.5em + 0.5rem + 2px);
+        --ttm-label-h: 1.25rem;
+        background: #fff;
+        border: 1px solid var(--ttm-border);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    html[data-theme="dark"] .ttm-filter-card {
+        background: #1A1A1A;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .ttm-filter-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--ttm-muted);
+        margin-bottom: 1rem;
+    }
+
+    .ttm-filter-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 280px) auto;
+        gap: 1rem;
+        align-items: start;
+        justify-content: start;
+    }
+
+    .ttm-filter-submit {
+        width: auto;
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-filter-row {
+            grid-template-columns: 1fr;
+        }
+
+        .ttm-filter-submit {
+            width: 100%;
+        }
+    }
+
+    .ttm-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        min-width: 0;
+    }
+
+    .ttm-filter-label {
+        display: block;
+        height: var(--ttm-label-h);
+        line-height: var(--ttm-label-h);
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--ttm-text);
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .ttm-filter-row .form-select-sm,
+    .ttm-filter-row .btn-sm {
+        height: var(--ttm-ctrl-h);
+        min-height: var(--ttm-ctrl-h);
+        box-sizing: border-box;
+        margin: 0;
+    }
+
+    .ttm-filter-row .btn-sm {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    @@media (max-width: 767px) {
+        .ttm-filter-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Page header ── */
+    .ttm-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+        .ttm-page-header h1 {
+            color: var(--ttm-text);
+            margin: 0;
+        }
+
+    /* ── Empty state ── */
+    .ttm-empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .ttm-empty-icon {
+        font-size: 3rem;
+        color: var(--ttm-border);
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    /* ── Form / modal ── */
+    .form-control,
+    .form-select {
+        background: var(--ttm-surface);
+        color: var(--ttm-text);
+        border-color: var(--ttm-border);
+        font-size: 0.9rem;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: var(--ttm-surface);
+            color: var(--ttm-text);
+            border-color: var(--ttm-primary);
+            box-shadow: 0 0 0 0.25rem rgba(91, 33, 182, 0.1);
+        }
+
+    .form-label {
+        color: var(--ttm-text);
+        font-weight: 500;
+    }
+
+    .modal-content {
+        background: var(--ttm-surface);
+        border: 1px solid var(--ttm-border);
+        color: var(--ttm-text);
+    }
+
+    .modal-header {
+        background: var(--ttm-surface);
+        border-bottom: 1px solid var(--ttm-border);
+    }
+
+    .modal-footer {
+        background: var(--ttm-surface);
+        border-top: 1px solid var(--ttm-border);
+    }
+
+    .modal-title {
+        color: var(--ttm-text);
+        font-weight: 600;
+    }
+
+    .btn-close {
+        filter: brightness(0.7);
+    }
+
+    html[data-theme="dark"] .btn-close {
+        filter: invert(1) brightness(0.8);
+    }
+
+    .modal-content .form-text {
+        color: var(--ttm-muted) !important;
+    }
+
+    /* تقویم بالای فیلد باز شود */
+    .datepicker-plot-area {
+        bottom: 100% !important;
+        top: auto !important;
+        margin-bottom: 6px;
+        z-index: 1070 !important;
+    }
+
+    html[data-theme="dark"] .form-select:disabled,
+    html[data-theme="dark"] .form-control:disabled {
+        background-color: #1A1A1A;
+        border-color: var(--ttm-border);
+        color: var(--ttm-muted);
+        opacity: 1;
+    }
+
+    /* ── Buttons: colors & hover shadows ── */
+    .btn-primary {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: var(--ttm-primary);
+        --bs-btn-border-color: var(--ttm-primary);
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: var(--ttm-primary-dark);
+        --bs-btn-hover-border-color: var(--ttm-primary-dark);
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: var(--ttm-primary-dark);
+        --bs-btn-active-border-color: var(--ttm-primary-dark);
+        --bs-btn-disabled-bg: var(--ttm-primary);
+        --bs-btn-disabled-border-color: var(--ttm-primary);
+        --bs-btn-focus-shadow-rgb: 91, 33, 182;
+        transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+        .btn-primary:hover,
+        .btn-primary:focus-visible {
+            box-shadow: 0 4px 14px rgba(91, 33, 182, 0.22);
+        }
+
+    html[data-theme="dark"] .btn-primary {
+        --bs-btn-bg: #9565E0;
+        --bs-btn-border-color: #9565E0;
+        --bs-btn-hover-bg: #8A54D4;
+        --bs-btn-hover-border-color: #8A54D4;
+        --bs-btn-active-bg: #8A54D4;
+        --bs-btn-active-border-color: #8A54D4;
+        --bs-btn-disabled-bg: #9565E0;
+        --bs-btn-disabled-border-color: #9565E0;
+        --bs-btn-focus-shadow-rgb: 149, 101, 224;
+    }
+
+        html[data-theme="dark"] .btn-primary:hover,
+        html[data-theme="dark"] .btn-primary:focus-visible {
+            box-shadow: 0 4px 14px rgba(149, 101, 224, 0.3);
+        }
+
+    .btn-outline-secondary {
+        transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+
+        .btn-outline-secondary:hover,
+        .btn-outline-secondary:focus-visible {
+            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.18);
+        }
+
+    html[data-theme="dark"] .btn-outline-secondary:hover,
+    html[data-theme="dark"] .btn-outline-secondary:focus-visible {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+</style>
+
+@* ── 1) هدر ── *@
+<div class="ttm-page-header">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        
+        <h1 class="h3">وظایف تیم «@Model.TeamDisplayname»</h1>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+        <i class="bi bi-plus-circle"></i> وظیفه جدید
+    </button>
+</div>
+
+@* ── 2) فیلتر ── *@
+<form method="get" action="/Tasks/ForTeam" class="ttm-filter-card">
+    <input type="hidden" name="teamId" value="@Model.TeamId" />
+
+    <div class="ttm-filter-card-title">
+        <i class="bi bi-funnel"></i> فیلتر وظایف
+    </div>
+
+    <div class="ttm-filter-row">
+
+        <div class="ttm-filter-group">
+            <label for="statusFilter" class="ttm-filter-label">وضعیت وظیفه</label>
+            <select class="form-select form-select-sm" id="statusFilter" name="statusFilter">
+                @foreach (var opt in filterOptions) {
+                    if (Model.AppliedStatusFilter == opt.Value) {
+                        <option value="@((int)opt.Value)" selected>@opt.Text</option>
+                    }
+                    else {
+                        <option value="@((int)opt.Value)">@opt.Text</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="ttm-filter-group">
+            <span class="ttm-filter-label">&nbsp;</span>
+            <button type="submit" class="btn btn-sm btn-primary ttm-filter-submit">
+                <i class="bi bi-funnel"></i> اعمال فیلتر
+            </button>
+        </div>
+
+    </div>
+</form>
+
+@* ── 3) لیست ── *@
+@if (Model.TeamTasks.Count == 0) {
+    <div class="ttm-empty-state">
+        <div class="ttm-empty-icon">
+            <i class="bi bi-inbox"></i>
+        </div>
+        @if (isFiltered) {
+            <p class="text-muted mb-0">با این فیلتر وظیفه‌ای یافت نشد.</p>
+        }
+        else {
+            <p class="text-muted mb-3">در این تیم وظیفه‌ای وجود ندارد.</p>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+                <i class="bi bi-plus-circle"></i> اولین وظیفه را بسازید
+            </button>
+        }
+    </div>
+}
+else {
+    <div class="ttm-tasks-list">
+        @foreach (var task in Model.TeamTasks) {
+            var isOverdue = task.DeadlineUtc.HasValue && task.DeadlineUtc.Value < DateTime.UtcNow;
+
+            var statusClass = task.Status switch {
+                TeamTaskStatus.Pending => "ttm-status-pending",
+                TeamTaskStatus.OnGoing => "ttm-status-ongoing",
+                TeamTaskStatus.ClaimedAsComplete => "ttm-status-claimed-complete",
+                TeamTaskStatus.ClaimedAsFailure => "ttm-status-claimed-failure",
+                TeamTaskStatus.OrderedToTryAgain => "ttm-status-ordered-retry",
+                TeamTaskStatus.AcceptedToTryAgain => "ttm-status-accepted-retry",
+                TeamTaskStatus.RejectedToTryAgain => "ttm-status-rejected-retry",
+                TeamTaskStatus.ClosedAsFailure => "ttm-status-closed-failure",
+                TeamTaskStatus.ClosedAsDeadlineFailure => "ttm-status-closed-deadline",
+                TeamTaskStatus.ClosedAsComplete => "ttm-status-closed-complete",
+                _ => "ttm-status-pending"
+            };
+
+            var myPositionText = task.MyPosition switch {
+                MyTaskPositionResponse.Creator => "محول کردید",
+                MyTaskPositionResponse.Assignee => "محول شدید",
+                MyTaskPositionResponse.Both => "خود-وظیفه",
+                MyTaskPositionResponse.None => "نقشی ندارید",
+                _ => ""
+            };
+
+            <a href="/Tasks/Details/@task.TaskId" class="task-card-link">
+                <div class="ttm-task-card">
+
+                    <div class="ttm-task-top">
+                        <h5 class="ttm-task-title">@task.Title</h5>
+                        <span class="ttm-status-badge @statusClass">@task.StatusText</span>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(task.Description)) {
+                        <p class="ttm-task-desc">@task.Description</p>
+                    }
+
+                    <div class="ttm-task-footer">
+                        @if (!string.IsNullOrEmpty(myPositionText)) {
+                            <span class="ttm-my-position"><i class="bi bi-person-badge"></i> @myPositionText</span>
+                        }
+
+                        @if (task.Assignee != null) {
+                            <span><i class="bi bi-person-check"></i> مسئول: @task.Assignee.UserDisplayname</span>
+                        }
+
+                        @if (task.Creator != null) {
+                            <span><i class="bi bi-person"></i> ایجادکننده: @task.Creator.UserDisplayname</span>
+                        }
+
+                        @if (task.DeadlineUtc.HasValue) {
+                            <span class="ttm-deadline @(isOverdue ? "overdue" : "")">
+                                <i class="bi bi-calendar-event"></i>
+                                @task.DeadlineUtc.Value.To_Tehran_Datetime().ToString("yyyy-MM-dd HH:mm")
+                                @if (isOverdue) {
+                                    <i class="bi bi-exclamation-circle"></i>
+                                }
+                            </span>
+                        }
+
+                        <span class="ms-auto text-nowrap">ایجاد: @task.CreatedAtUtc.To_Tehran_Datetime().ToString("yyyy/MM/dd HH:mm")</span>
+                    </div>
+
+                </div>
+            </a>
+        }
+    </div>
+}
+
+@* ── 4) مودال ایجاد وظیفه ── *@
+<div class="modal fade" id="createTaskModal" tabindex="-1" role="dialog" aria-labelledby="createTaskLabel" aria-hidden="true" data-team-id="@Model.TeamId">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTaskLabel">وظیفه جدید</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+            </div>
+            <form method="post" action="/Tasks/Create">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="TeamId" value="@Model.TeamId" />
+
+                <div class="modal-body">
+
+                    @* Assignee (filled by script) *@
+                    <div class="mb-3">
+                        <label for="createTaskAssigneeId" class="form-label">چه کسی باید انجامش دهد؟ <span class="text-danger">*</span></label>
+                        <select class="form-select" id="createTaskAssigneeId" name="AppointedToMemberId" required disabled>
+                            <option value="">در حال دریافت اعضا...</option>
+                        </select>
+                        <div id="assigneeHint" class="form-text" style="display:none;">
+                            شما خودتان را به‌عنوان مسئول انجام دادن این کار انتخاب کرده‌اید.
+                        </div>
+                    </div>
+
+                    @* Title *@
+                    <div class="mb-3">
+                        <label for="title" class="form-label">عنوان <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="Title" required maxlength="200" placeholder="عنوان وظیفه را وارد کنید">
+                    </div>
+
+                    @* Description *@
+                    <div class="mb-3">
+                        <label for="description" class="form-label">توضیحات <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="description" name="Description" rows="3" required maxlength="5000" placeholder="کاری که باید انجام شود را توضیح دهید"></textarea>
+                    </div>
+
+                    @* Deadline (Jalali input, converted to UTC before submit) *@
+                    <div class="mb-0">
+                        <label for="deadlineJalali" class="form-label">ددلاین (اختیاری)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="deadlineJalali"
+                                   placeholder="انتخاب تاریخ و ساعت" autocomplete="off" />
+                            <button class="btn btn-outline-secondary" type="button" id="deadlineClear" title="پاک کردن">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" name="DeadlineUtc" id="deadlineUtc" />
+                        <div class="form-text">آخرین مهلت انجام این کار چه تاریخی است؟</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary">ایجاد وظیفه</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Load team members into the assignee select when the modal opens
+        (function () {
+            const modal = document.getElementById('createTaskModal');
+            const assigneeSelect = document.getElementById('createTaskAssigneeId');
+            const hint = document.getElementById('assigneeHint');
+            const teamId = modal.dataset.teamId;
+            let loaded = false;
+
+            function setAssigneeMessage(text, disabled) {
+                assigneeSelect.innerHTML = '';
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = text;
+                assigneeSelect.appendChild(opt);
+                assigneeSelect.disabled = disabled;
+                assigneeSelect.value = '';
+                hint.style.display = 'none';
+            }
+
+            modal.addEventListener('show.bs.modal', async function () {
+                if (loaded) return;
+
+                setAssigneeMessage('در حال دریافت اعضا...', true);
+
+                try {
+                    const res = await fetch('/Tasks/TeamMembers?teamId=' + encodeURIComponent(teamId), {
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => null);
+                        throw new Error(err?.fa_message || err?.message || 'خطا در دریافت اعضا');
+                    }
+
+                    const members = await res.json();
+
+                    if (members.length === 0) {
+                        setAssigneeMessage('عضوی در این تیم یافت نشد', true);
+                        return;
+                    }
+
+                    setAssigneeMessage('انتخاب مسئول...', false);
+
+                    // Current user first, then the rest
+                    const sorted = [...members].sort((a, b) => (b.isCurrentUser - a.isCurrentUser));
+
+                    sorted.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.memberId;
+                        opt.textContent = m.isCurrentUser
+                            ? '★ ' + m.userDisplayname + ' (خودِ شما)'
+                            : m.userDisplayname + ' (' + m.userEmail + ')';
+                        opt.dataset.isCurrentUser = m.isCurrentUser;
+                        assigneeSelect.appendChild(opt);
+                    });
+
+                    loaded = true;
+                } catch (e) {
+                    setAssigneeMessage(e.message, true);
+                }
+            });
+
+            // Show hint when the current user is chosen as assignee
+            assigneeSelect.addEventListener('change', function () {
+                const selected = this.selectedOptions[0];
+                const isMe = selected && selected.dataset.isCurrentUser === 'true';
+                hint.style.display = isMe ? 'block' : 'none';
+            });
+
+            // Reset the assignee select when the modal closes
+            modal.addEventListener('hidden.bs.modal', function () {
+                if (!loaded) setAssigneeMessage('در حال دریافت اعضا...', true);
+            });
+        })();
+    </script>
+
+    <script>
+        $(function () {
+            const $input = $('#deadlineJalali');
+            const $hidden = $('#deadlineUtc');
+
+            $input.persianDatepicker({
+                format: 'YYYY/MM/DD HH:mm',
+                timePicker: {
+                    enabled: true,
+                    step: 1,
+                    meridiem: { enabled: false }
+                },
+                observer: true,
+                autoClose: false,
+                initialValue: false,
+                onSelect: function (unix) {
+                    // unix: زمان انتخاب‌شده به میلی‌ثانیه (تهران)
+                    // تبدیل به UTC ISO برای سرور
+                    $hidden.val(new persianDate(unix).toDate().toISOString());
+                }
+            });
+
+            $('#deadlineClear').on('click', function () {
+                $input.val('');
+                $hidden.val('');
+            });
+
+            $('#createTaskModal').on('hidden.bs.modal', function () {
+                $input.val('');
+                $hidden.val('');
+            });
+        });
+    </script>
+}
