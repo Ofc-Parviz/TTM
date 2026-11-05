@@ -77,29 +77,29 @@ TeamTaskManagement.sln
 
 | پروژه | مسئولیت |
 |---|---|
-| `Web` | صفحات Razor، Web API، احراز هویت با Cookie و JWT، ثبت وابستگی‌ها (Composition Root) |
-| `Application` | Command و Query با MediatR، مدل‌های Response، Pipeline Behaviors، اعتبارسنجی با FluentValidation |
-| `Domain` | اگریگیت‌ها، موجودیت‌ها، Value Object ها، Enum های وضعیت، خطاهای دامین، رویدادها، Specification ها و اینترفیس‌های Repository |
-| `Shared` | نوع نتیجه `Result<T>` و قراردادهای مشترک |
-| `Infrastructure` | هش کردن رمز عبور، صدور توکن JWT، احراز هویت و ارسال ایمیل |
-| `Persistence` | EF Core، پیکربندی Entity ها، پیاده‌سازی Repository ها، QuerySpecification بر پایه Specification های دامین، انتشار رویدادهای دامین |
+| لایه `Web` | صفحات Razor، Web API، احراز هویت با Cookie و JWT، ثبت وابستگی‌ها (Composition Root) |
+| لایه `Application` | Command و Query با MediatR، مدل‌های Response، Pipeline Behaviors، اعتبارسنجی با FluentValidation |
+| لایه `Domain` | اگریگیت‌ها، موجودیت‌ها، Value Object ها، Enum های وضعیت، خطاهای دامین، رویدادها، Specification ها و اینترفیس‌های Repository |
+| لایه `Shared` | نوع نتیجه `Result<T>` و قراردادهای مشترک |
+| لایه `Infrastructure` | هش کردن رمز عبور، صدور توکن JWT، احراز هویت و ارسال ایمیل |
+| لایه `Persistence` | EF Core، پیکربندی Entity ها، پیاده‌سازی Repository ها، QuerySpecification بر پایه Specification های دامین، انتشار رویدادهای دامین |
 
 ### قانون وابستگی
 
-- `Web` به `Application` و برای ثبت سرویس‌ها به `Infrastructure` و `Persistence` وابسته است.
-- `Application` به `Domain` و `Shared` وابسته است.
-- `Infrastructure` و `Persistence` به `Domain` و `Application` وابسته‌اند.
-- `Domain` فقط به `Shared` وابسته است و به ASP.NET، EF Core یا MediatR وابستگی ندارد.
-
+- لایه `Web` به `Application` و برای ثبت سرویس‌ها به `Infrastructure` و `Persistence` وابسته است.
+- لایه `Application` به `Domain` و `Shared` وابسته است.
+- لایه `Infrastructure` و `Persistence` به `Domain` و `Application` وابسته‌اند.
+- لایه `Domain` فقط به `Shared` (که به هیچ جایی وابسته نیست) و به `MediatR` (برای ارث بری اینترفیس رویداد دامنه از INotification) وابسته است.
+  
 ---
 
 ## مدل دامین
 
 سه اگریگیت ریشه وجود دارد: `Team`، `User` و `TeamTask`. ارجاع بین آن‌ها فقط با شناسه (`Guid`) انجام می‌شود.
 
-- **Team:** شامل `TeamMember` و `TeamInvite` به‌عنوان فرزند. ساخت تیم، مالک را همزمان به‌عنوان عضو اول ثبت می‌کند. سازنده‌ها و متدهای تغییر فرزندان `internal` هستند.
-- **TeamTask:** اگریگیت جداگانه برای چرخه عمر وظیفه. مجوز هر عملیات بر اساس `ActingMember` (شناسه و سطح دسترسی عضو درخواست‌کننده) تصمیم گرفته می‌شود.
-- **User:** اگریگیت مستقل برای کاربر. ساخت کاربر رویداد `UserRegisteredEvent` را منتشر می‌کند.
+- **تیم - Team:** شامل `TeamMember` و `TeamInvite` به‌عنوان فرزند. ساخت تیم، مالک را همزمان به‌عنوان عضو اول ثبت می‌کند. سازنده‌ها و متدهای تغییر فرزندان `internal` هستند.
+- **وظیفه تیم - TeamTask:** اگریگیت جداگانه برای چرخه عمر وظیفه. مجوز هر عملیات بر اساس `ActingMember` (شناسه و سطح دسترسی عضو درخواست‌کننده) تصمیم گرفته می‌شود.
+- **کاربر - User:** اگریگیت مستقل برای کاربر. ساخت کاربر رویداد `UserRegisteredEvent` را منتشر می‌کند.
 
 ### سطح دسترسی
 
