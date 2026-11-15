@@ -10,6 +10,12 @@ Built with **ASP.NET Core 8 MVC and Web API**, **Clean Architecture**, **DDD**, 
 
 > Full documentation (for users, developers, and technical reviewers) is available at `/Home/Docs` when running the project.
 
+![TTM's Landing Mockup](Screenshots/ttm-wide-cover-final-optimized.png)
+
+<p align="left">
+  <a href="Gallery.md">See More Images of TTM in Gallery.md</a>
+</p>
+
 ---
 
 ## Features
