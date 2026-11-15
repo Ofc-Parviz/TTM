@@ -1,4 +1,4 @@
-# 🚀 پلتفرم سازمانی مدیریت وظایف تیمی | TTM
+# پلتفرم سازمانی مدیریت وظایف تیمی | TTM
 <p align="right">
   <a href="README.md">🌐 Read in English (نسخه انگلیسی)</a>
 </p>
@@ -9,6 +9,12 @@
 ساخته‌شده با **ASP.NET Core 8 MVC و Web API**، **Clean Architecture**، **DDD** و **CQRS**.
 
 > مستندات کامل (کاربران، توسعه‌دهندگان و بررسی فنی) در صفحه `/Home/Docs` در دسترس است.
+
+![TTM's Landing Mockup](Screenshots/ttm-wide-cover-final-optimized.png)
+
+<p align="right">
+  <a href="Gallery.md">مشاهده تصاویر بیشتر در Gallery.md</a>
+</p>
 
 ---
 
@@ -57,6 +63,8 @@ dotnet test
 
 سلوشن از ۸ پروژه تشکیل شده است. وابستگی‌ها همیشه به سمت لایه‌های داخلی هستند.
 
+<div dir="ltr">
+
 ```text
 TeamTaskManagement.sln
 ├─ Front/
@@ -73,6 +81,8 @@ TeamTaskManagement.sln
    └─ TeamTaskManagement.IntegrationTests   تست‌های API و پایگاه داده
 ```
 
+<div dir="rtl">
+  
 ### مسئولیت لایه‌ها
 
 | پروژه | مسئولیت |
@@ -166,8 +176,8 @@ Authorization: Bearer <accessToken>
 
 ## تست‌ها
 
-- **`Domain.Tests`:** تست واحد قواعد کسب‌وکار، انتقال وضعیت وظیفه و جریان دعوتنامه. بدون نیاز به پایگاه داده.
-- **`IntegrationTests`:** جریان کامل API و تعامل با پایگاه داده. پیش از اجرا تنظیمات اتصال به پایگاه داده آزمایشی را بررسی کنید.
+- **`تست های دامین - Domain.Tests`:** تست واحد قواعد کسب‌وکار، انتقال وضعیت وظیفه و جریان دعوتنامه. بدون نیاز به پایگاه داده.
+- **`تست های یکپارچه - IntegrationTests`:** جریان کامل API و تعامل با پایگاه داده. پیش از اجرا تنظیمات اتصال به پایگاه داده آزمایشی را بررسی کنید.
 
 ---
 
