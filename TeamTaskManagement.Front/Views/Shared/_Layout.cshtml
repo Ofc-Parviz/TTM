@@ -22,6 +22,7 @@
             --ttm-muted: #64748B;
             --ttm-danger: #DC2626;
             --ttm-nav-h: 60px;
+            --ttm-footer-h-mobile: 26px;
         }
 
         *, *::before, *::after {
@@ -158,8 +159,11 @@
 
         /* Mobile bottom nav (auth only) */
         .ttm-bottom-nav {
-            position: relative;
-            z-index: 1029;
+            position: fixed;
+            bottom: var(--ttm-footer-h-mobile);
+            right: 0;
+            left: 0;
+            z-index: 1030;
             background: #fff;
             border-top: 1px solid var(--ttm-border);
             display: flex;
@@ -199,22 +203,6 @@
             padding-top: 1.5rem;
             padding-bottom: 2rem;
             flex: 1;
-        }
-
-        @@media (max-width: 767px) {
-            .ttm-main {
-                padding-bottom: 0;
-            }
-        }
-
-        @@media (min-width: 768px) {
-            .ttm-bottom-nav {
-                display: none;
-            }
-
-            .ttm-main {
-                padding-bottom: 2rem;
-            }
         }
 
         /* Guest header login btn */
@@ -288,30 +276,57 @@
             font-weight: 600;
             border-top: 1px solid var(--ttm-border);
             margin-top: auto;
-            z-index: 1031;
         }
 
-        @@media (max-width: 767px) {
-            .ttm-footer {
-                font-size: 0.7rem;
-                padding: 0.05rem 0;
+            .ttm-footer a {
+                color: var(--ttm-primary);
+                text-decoration: none;
+                transition: color .15s;
             }
 
-                .ttm-footer a .container {
-                    margin-top: 2px;
-
+                .ttm-footer a:hover {
+                    color: var(--ttm-primary-dark);
                 }
-        }
 
-        .ttm-footer a {
-            color: var(--ttm-primary);
-            text-decoration: none;
-            transition: color .15s;
-        }
-
-            .ttm-footer a:hover {
-                color: var(--ttm-primary-dark);
+        /* Mobile: footer fixed at bottom with fixed height, nav sits above it */
+        @@media (max-width: 767px) {
+            .ttm-dock {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                z-index: 1029;
+                background: var(--ttm-surface);
             }
+
+            .ttm-footer {
+                height: var(--ttm-footer-h-mobile);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.7rem;
+                padding: 0;
+                border-top: 1px solid var(--ttm-border);
+                margin-top: 0;
+            }
+
+            body {
+                padding-bottom: calc(58px + var(--ttm-footer-h-mobile));
+            }
+        }
+        /* Dock: wrapper for mobile nav + footer */
+        .ttm-dock {
+            display: block;
+        }
+
+        /* Desktop: wrapper has no layout effect, footer sticks via body flex */
+        @@media (min-width: 768px) {
+            .ttm-dock {
+                display: contents;
+            }
+        }
+
+       
 
 
         /* Dark mode toggle */
@@ -601,49 +616,52 @@
         </div>
     </main>
 
-    @if (isAuthenticated) {
-        <nav class="ttm-bottom-nav d-md-none">
-            <a href="/Teams" class="@(currentPath?.StartsWith("/Teams") == true ? "active" : "")">
-                <i class="bi bi-people"></i>
-                تیم‌ها
-            </a>
-            <a href="/Tasks" class="@(currentPath?.StartsWith("/Tasks") == true ? "active" : "")">
-                <i class="bi bi-check2-square"></i>
-                وظایف
-            </a>
-            <a href="/Invites" class="@(currentPath?.StartsWith("/Invites") == true ? "active" : "")">
-                <i class="bi bi-envelope"></i>
-                دعوت‌ها
-            </a>
-            <a href="/Profile" class="@(currentPath?.StartsWith("/Profile") == true ? "active" : "")">
-                <i class="bi bi-person-circle"></i>
-                پروفایل
-            </a>
-            <a href="/SignIn/Logout" class="exit-link">
-                <i class="bi bi-box-arrow-left"></i>
-                خروج
-            </a>
-        </nav>
-    }
-    else {
-        <nav class="ttm-bottom-nav d-md-none">
-            <a href="/SignIn" class="@(currentPath?.StartsWith("/SignIn") == true ? "active" : "")">
-                <i class="bi bi-person-check"></i>
-                ورود
-            </a>
-            <a href="/Home/Docs" class="@(currentPath?.StartsWith("/Home/Docs") == true ? "active" : "")">
-                <i class="bi bi-book"></i>
-                مستندات
-            </a>
-        </nav>
-    }
+    @* ── Mobile dock: nav + footer ── *@
+    <div class="ttm-dock">
+        @if (isAuthenticated) {
+            <nav class="ttm-bottom-nav d-md-none">
+                <a href="/Teams" class="@(currentPath?.StartsWith("/Teams") == true ? "active" : "")">
+                    <i class="bi bi-people"></i>
+                    تیم‌ها
+                </a>
+                <a href="/Tasks" class="@(currentPath?.StartsWith("/Tasks") == true ? "active" : "")">
+                    <i class="bi bi-check2-square"></i>
+                    وظایف
+                </a>
+                <a href="/Invites" class="@(currentPath?.StartsWith("/Invites") == true ? "active" : "")">
+                    <i class="bi bi-envelope"></i>
+                    دعوت‌ها
+                </a>
+                <a href="/Profile" class="@(currentPath?.StartsWith("/Profile") == true ? "active" : "")">
+                    <i class="bi bi-person-circle"></i>
+                    پروفایل
+                </a>
+                <a href="/SignIn/Logout" class="exit-link">
+                    <i class="bi bi-box-arrow-left"></i>
+                    خروج
+                </a>
+            </nav>
+        }
+        else {
+            <nav class="ttm-bottom-nav d-md-none">
+                <a href="/SignIn" class="@(currentPath?.StartsWith("/SignIn") == true ? "active" : "")">
+                    <i class="bi bi-person-check"></i>
+                    ورود
+                </a>
+                <a href="/Home/Docs" class="@(currentPath?.StartsWith("/Home/Docs") == true ? "active" : "")">
+                    <i class="bi bi-book"></i>
+                    مستندات
+                </a>
+            </nav>
+        }
 
-    @* ── Footer ── *@
-    <footer class="ttm-footer">
-        <div class="container">
-            طراحی و توسعه : <a href="https://github.com/ofc-parviz" target="_blank">github.com/ofc-parviz</a>
-        </div>
-    </footer>
+        @* ── Footer ── *@
+        <footer class="ttm-footer">
+            <div class="container">
+                طراحی و توسعه : <a href="https://github.com/ofc-parviz" target="_blank">github.com/ofc-parviz</a>
+            </div>
+        </footer>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
